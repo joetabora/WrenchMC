@@ -1,0 +1,10 @@
+{
+  "name": "wrenchmc-shadcn",
+  "src": "src/components/ui",
+  "displayName": "WrenchMC UI",
+  "install": [
+    "@radix-ui/react-accordion",
+    "@radix-ui/react-popover",
+    "@radix-ui/react-tooltip"
+  ]
+}
