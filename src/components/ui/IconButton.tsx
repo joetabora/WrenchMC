@@ -1,6 +1,5 @@
 "use client"
 import React from 'react'
-import { Icon as LucideIcon } from 'lucide-react'
 
 export default function IconButton({ icon: Icon, label, className = '', ...props }: any) {
   return (
