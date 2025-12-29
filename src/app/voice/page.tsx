@@ -37,7 +37,7 @@ export default function VoicePage() {
   return (
     <section>
       <h2 className="text-lg font-semibold">Voice Search</h2>
-      <p className="text-sm text-gray-500">Tap and ask: "What's the torque for the transmission cover on my 2018 Softail?"</p>
+      <p className="text-sm text-gray-500">Tap and ask: &quot;What&apos;s the torque for the transmission cover on my 2018 Softail?&quot;</p>
       <div className="mt-4">
         <VoiceController onResult={handleResult} />
       </div>
