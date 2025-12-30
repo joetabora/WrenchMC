@@ -1,8 +1,8 @@
 'use client'
 import React from 'react'
-import { motion } from 'framer-motion'
+import { motion, HTMLMotionProps } from 'framer-motion'
 
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+type ButtonProps = Omit<HTMLMotionProps<'button'>, 'children'> & {
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost'
   size?: 'sm' | 'md' | 'lg'
   isLoading?: boolean
@@ -16,6 +16,9 @@ export default function Button({
   size = 'md',
   isLoading = false,
   disabled,
+  onDrag,
+  onDragStart,
+  onDragEnd,
   ...props 
 }: ButtonProps) {
   const baseStyles = 'relative font-semibold rounded-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-wrench-accent focus:ring-offset-2 focus:ring-offset-wrench disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden'
