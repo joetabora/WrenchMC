@@ -1,9 +1,9 @@
 import './globals.css'
 import React from 'react'
 import { Inter } from 'next/font/google'
-import { motion } from 'framer-motion'
 import ClientProviders from '@/components/ClientProviders'
 import HeaderActions from '@/components/HeaderActions'
+import AnimatedLogo from '@/components/AnimatedLogo'
 import { Search, Mic, Wrench, User, FilePlus } from 'lucide-react'
 import Link from 'next/link'
 
@@ -38,13 +38,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <div className="flex items-center justify-between h-16 md:h-20">
                   {/* Logo */}
                   <Link href="/" className="flex items-center gap-3 group">
-                    <motion.div
-                      whileHover={{ rotate: 360 }}
-                      transition={{ duration: 0.6 }}
-                      className="p-2 rounded-lg bg-gradient-accent/20 group-hover:bg-gradient-accent/30 transition-colors"
-                    >
-                      <Wrench className="w-6 h-6 text-wrench-accent" />
-                    </motion.div>
+                    <AnimatedLogo />
                     <span className="text-2xl font-bold gradient-text">WrenchMC</span>
                   </Link>
 
