@@ -40,12 +40,15 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
   }, [])
 
   const signUp = async (email: string, password: string) => {
+    const emailRedirectTo = typeof window !== 'undefined' 
+      ? `${window.location.origin}/auth/login`
+      : undefined
     const result = await supabase.auth.signUp({ 
       email, 
       password,
-      options: {
-        emailRedirectTo: `${window.location.origin}/auth/login`
-      }
+      options: emailRedirectTo ? {
+        emailRedirectTo
+      } : undefined
     })
     if (result.error) throw result.error
     return result

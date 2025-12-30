@@ -115,12 +115,13 @@ function AuthProvider({ children }) {
         }
     }["AuthProvider.useEffect"], []);
     const signUp = async (email, password)=>{
+        const emailRedirectTo = ("TURBOPACK compile-time truthy", 1) ? `${window.location.origin}/auth/login` : "TURBOPACK unreachable";
         const result = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$supabaseClient$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["supabase"].auth.signUp({
             email,
             password,
-            options: {
-                emailRedirectTo: `${window.location.origin}/auth/login`
-            }
+            options: ("TURBOPACK compile-time truthy", 1) ? {
+                emailRedirectTo
+            } : "TURBOPACK unreachable"
         });
         if (result.error) throw result.error;
         return result;
@@ -147,7 +148,7 @@ function AuthProvider({ children }) {
         children: children
     }, void 0, false, {
         fileName: "[project]/src/components/AuthProvider.tsx",
-        lineNumber: 66,
+        lineNumber: 69,
         columnNumber: 5
     }, this);
 }
