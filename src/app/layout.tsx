@@ -1,10 +1,18 @@
 import './globals.css'
 import React from 'react'
+import { Inter } from 'next/font/google'
 import { motion } from 'framer-motion'
 import ClientProviders from '@/components/ClientProviders'
 import HeaderActions from '@/components/HeaderActions'
 import { Search, Mic, Wrench, User, FilePlus } from 'lucide-react'
 import Link from 'next/link'
+
+const inter = Inter({ 
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700', '800'],
+  variable: '--font-inter',
+  display: 'swap',
+})
 
 export const metadata = {
   title: 'WrenchMC - Harley-Davidson Technical Specs Database',
@@ -21,7 +29,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
   return (
     <html lang="en" className="dark">
-      <body className="bg-gradient-to-br from-wrench-dark via-wrench to-wrench-light text-gray-100 min-h-screen">
+      <body className={`${inter.variable} font-sans bg-gradient-to-br from-wrench-dark via-wrench to-wrench-light text-gray-100 min-h-screen`}>
         <ClientProviders>
           <div className="min-h-screen">
             {/* Header */}
