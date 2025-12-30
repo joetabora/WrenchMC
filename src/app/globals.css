@@ -2,9 +2,41 @@
 @tailwind components;
 @tailwind utilities;
 
-html, body, #__next {
-  height: 100%;
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+@layer base {
+  html {
+    @apply scroll-smooth;
+  }
+  
+  body {
+    @apply bg-gradient-to-br from-wrench-dark via-wrench-DEFAULT to-wrench-light text-gray-100 antialiased;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+  
+  /* Better focus styles */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-wrench-accent ring-offset-2 ring-offset-wrench-DEFAULT;
+  }
 }
 
-/* small utility */
-.card { @apply bg-white dark:bg-gray-800 rounded-lg shadow p-4 }
+@layer components {
+  /* Card utility with enhanced styling */
+  .card {
+    @apply bg-white/10 dark:bg-gray-800/40 backdrop-blur-sm rounded-xl shadow-elevated p-6 border border-white/10 dark:border-gray-700/50 transition-all duration-300;
+  }
+  
+  .card:hover {
+    @apply shadow-glow-lg transform scale-[1.02] border-wrench-accent/30;
+  }
+  
+  /* Gradient text utility */
+  .gradient-text {
+    @apply bg-gradient-to-r from-wrench-accent to-wrench-accent-light bg-clip-text text-transparent;
+  }
+  
+  /* Glass morphism effect */
+  .glass {
+    @apply bg-white/5 backdrop-blur-md border border-white/10;
+  }
+}
