@@ -40,7 +40,13 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
   }, [])
 
   const signUp = async (email: string, password: string) => {
-    const result = await supabase.auth.signUp({ email, password })
+    const result = await supabase.auth.signUp({ 
+      email, 
+      password,
+      options: {
+        emailRedirectTo: `${window.location.origin}/auth/login`
+      }
+    })
     if (result.error) throw result.error
     return result
   }
