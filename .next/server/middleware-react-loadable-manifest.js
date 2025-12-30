@@ -1,1 +1,1 @@
-self.__REACT_LOADABLE_MANIFEST="{\"app/voice/page.tsx -> @/components/VoiceController\":{\"id\":\"app/voice/page.tsx -> @/components/VoiceController\",\"files\":[\"static/chunks/_app-pages-browser_src_components_VoiceController_tsx.js\"]}}"
+self.__REACT_LOADABLE_MANIFEST="{}"

@@ -39,9 +39,22 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
     }
   }, [])
 
-  const signUp = (email: string, password: string) => supabase.auth.signUp({ email, password })
-  const signIn = (email: string, password: string) => supabase.auth.signInWithPassword({ email, password })
-  const signOut = () => supabase.auth.signOut().then(() => setUser(null))
+  const signUp = async (email: string, password: string) => {
+    const result = await supabase.auth.signUp({ email, password })
+    if (result.error) throw result.error
+    return result
+  }
+  
+  const signIn = async (email: string, password: string) => {
+    const result = await supabase.auth.signInWithPassword({ email, password })
+    if (result.error) throw result.error
+    return result
+  }
+  
+  const signOut = async () => {
+    await supabase.auth.signOut()
+    setUser(null)
+  }
 
   return (
     <ctx.Provider value={{ user, signUp, signIn, signOut }}>{children}</ctx.Provider>
