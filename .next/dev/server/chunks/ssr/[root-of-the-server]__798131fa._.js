@@ -107,6 +107,21 @@ function AuthProvider({ children }) {
         if (result.error) throw result.error;
         return result;
     };
+    const signInWithGoogle = async ()=>{
+        const redirectTo = ("TURBOPACK compile-time falsy", 0) ? "TURBOPACK unreachable" : undefined;
+        const result = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$supabaseClient$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["supabase"].auth.signInWithOAuth({
+            provider: 'google',
+            options: {
+                redirectTo: redirectTo,
+                queryParams: {
+                    access_type: 'offline',
+                    prompt: 'consent'
+                }
+            }
+        });
+        if (result.error) throw result.error;
+        return result;
+    };
     const signOut = async ()=>{
         await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$supabaseClient$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["supabase"].auth.signOut();
         setUser(null);
@@ -116,12 +131,13 @@ function AuthProvider({ children }) {
             user,
             signUp,
             signIn,
+            signInWithGoogle,
             signOut
         },
         children: children
     }, void 0, false, {
         fileName: "[project]/src/components/AuthProvider.tsx",
-        lineNumber: 69,
+        lineNumber: 88,
         columnNumber: 5
     }, this);
 }
