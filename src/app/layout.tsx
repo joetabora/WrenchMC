@@ -21,11 +21,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
   return (
     <html lang="en" className="dark">
-      <body className="bg-gradient-to-br from-wrench-dark via-wrench-DEFAULT to-wrench-light text-gray-100 min-h-screen">
+      <body className="bg-gradient-to-br from-wrench-dark via-wrench to-wrench-light text-gray-100 min-h-screen">
         <ClientProviders>
           <div className="min-h-screen">
             {/* Header */}
-            <header className="sticky top-0 z-50 backdrop-blur-md bg-wrench-DEFAULT/80 border-b border-white/10">
+            <header className="sticky top-0 z-50 backdrop-blur-md bg-wrench/80 border-b border-white/10">
               <div className="max-w-7xl mx-auto px-4">
                 <div className="flex items-center justify-between h-16 md:h-20">
                   {/* Logo */}

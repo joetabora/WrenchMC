@@ -18,7 +18,7 @@ export default function Button({
   disabled,
   ...props 
 }: ButtonProps) {
-  const baseStyles = 'relative font-semibold rounded-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-wrench-accent focus:ring-offset-2 focus:ring-offset-wrench-DEFAULT disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden'
+  const baseStyles = 'relative font-semibold rounded-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-wrench-accent focus:ring-offset-2 focus:ring-offset-wrench disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden'
   
   const variants = {
     primary: 'bg-gradient-accent text-white hover:shadow-glow hover:scale-105 active:scale-95',

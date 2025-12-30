@@ -102,7 +102,7 @@ export default function VoiceController({ onResult }: Props) {
           transition-all duration-300
           ${listening 
             ? 'bg-gradient-accent shadow-glow-lg' 
-            : 'bg-gradient-to-br from-wrench-light to-wrench-DEFAULT border-2 border-wrench-accent/30'
+            : 'bg-gradient-to-br from-wrench-light to-wrench border-2 border-wrench-accent/30'
           }
         `}
         whileHover={{ scale: 1.05 }}
