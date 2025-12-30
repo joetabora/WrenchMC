@@ -1,8 +1,10 @@
 'use client'
 import React from 'react'
-import { motion } from 'framer-motion'
+import { motion, HTMLMotionProps } from 'framer-motion'
 
-export default function Input(props: React.InputHTMLAttributes<HTMLInputElement>) {
+type InputProps = Omit<HTMLMotionProps<'input'>, 'onDrag' | 'onDragStart' | 'onDragEnd'>
+
+export default function Input({ className = '', ...props }: InputProps) {
   return (
     <motion.input
       {...props}
@@ -16,7 +18,7 @@ export default function Input(props: React.InputHTMLAttributes<HTMLInputElement>
         text-gray-100 placeholder:text-gray-400
         focus:outline-none focus:ring-2 focus:ring-wrench-accent focus:border-wrench-accent
         transition-all duration-300
-        ${props.className || ''}
+        ${className}
       `}
     />
   )
