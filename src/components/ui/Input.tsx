@@ -11,7 +11,7 @@ export default function Input({ className = '', ...props }: InputProps) {
       whileFocus={{ scale: 1.02 }}
       className={`
         w-full px-4 py-3 
-        bg-wrench-DEFAULT/90
+        bg-wrench/90
         backdrop-blur-sm
         border-2 border-wrench-chrome/20
         rounded-lg

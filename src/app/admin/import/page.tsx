@@ -249,7 +249,7 @@ export default function ImportPage() {
                   <div className="w-full border-t border-white/10"></div>
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-wrench-DEFAULT text-gray-400">Or</span>
+                  <span className="px-2 bg-wrench text-gray-400">Or</span>
                 </div>
               </div>
 

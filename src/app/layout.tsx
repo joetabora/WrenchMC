@@ -33,7 +33,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ClientProviders>
           <div className="min-h-screen">
             {/* Header - Industrial/Edgy Design */}
-            <header className="sticky top-0 z-50 backdrop-blur-md bg-wrench-DEFAULT/95 border-b-2 border-wrench-chrome/20 shadow-elevated">
+            <header className="sticky top-0 z-50 backdrop-blur-md bg-wrench/95 border-b-2 border-wrench-chrome/20 shadow-elevated">
               <div className="max-w-7xl mx-auto px-4">
                 <div className="flex items-center justify-between h-16 md:h-20">
                   {/* Logo */}
@@ -73,7 +73,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </main>
 
             {/* Footer - Industrial Style */}
-            <footer className="border-t-2 border-wrench-chrome/20 mt-20 py-8 bg-wrench-DEFAULT/50">
+            <footer className="border-t-2 border-wrench-chrome/20 mt-20 py-8 bg-wrench/50">
               <div className="max-w-7xl mx-auto px-4">
                 <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                   <div className="flex items-center gap-2">

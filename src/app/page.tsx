@@ -148,7 +148,7 @@ export default function Home() {
           transition={{ duration: 0.6 }}
           className="max-w-4xl mx-auto"
         >
-          <Card className="text-center bg-wrench-DEFAULT/90 border-2 border-wrench-accent/40 shadow-glow-lg">
+          <Card className="text-center bg-wrench/90 border-2 border-wrench-accent/40 shadow-glow-lg">
             <motion.div
               animate={{ rotate: [0, 10, -10, 0] }}
               transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
