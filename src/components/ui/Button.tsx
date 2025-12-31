@@ -21,13 +21,13 @@ export default function Button({
   onDragEnd,
   ...props 
 }: ButtonProps) {
-  const baseStyles = 'relative font-semibold rounded-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-wrench-accent focus:ring-offset-2 focus:ring-offset-wrench disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden'
+  const baseStyles = 'relative font-bold uppercase tracking-wider rounded-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-wrench-accent focus:ring-offset-2 focus:ring-offset-wrench-dark disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden border border-transparent'
   
   const variants = {
-    primary: 'bg-gradient-accent text-white hover:shadow-glow hover:scale-105 active:scale-95',
-    secondary: 'bg-wrench-light text-white hover:bg-wrench-light/80 hover:scale-105 active:scale-95',
-    outline: 'border-2 border-wrench-accent text-wrench-accent hover:bg-wrench-accent/10 hover:scale-105 active:scale-95',
-    ghost: 'text-wrench-accent hover:bg-wrench-accent/10 hover:scale-105 active:scale-95'
+    primary: 'bg-gradient-accent text-white hover:shadow-glow-lg hover:scale-105 active:scale-95 border-wrench-accent/50 shadow-glow',
+    secondary: 'bg-wrench-light text-wrench-text-primary hover:bg-wrench-light-soft hover:scale-105 active:scale-95 border-wrench-chrome/30 shadow-elevated',
+    outline: 'border-2 border-wrench-accent text-wrench-accent hover:bg-wrench-accent/20 hover:shadow-glow hover:scale-105 active:scale-95 bg-transparent',
+    ghost: 'text-wrench-accent hover:bg-wrench-accent/10 hover:scale-105 active:scale-95 bg-transparent'
   }
   
   const sizes = {
@@ -46,12 +46,12 @@ export default function Button({
     >
       {isLoading && (
         <motion.div
-          className="absolute inset-0 flex items-center justify-center bg-wrench-accent/80"
+          className="absolute inset-0 flex items-center justify-center bg-wrench-accent/90 backdrop-blur-sm"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
         >
           <motion.div
-            className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
+            className="w-6 h-6 border-3 border-wrench-chrome-bright border-t-transparent rounded-full"
             animate={{ rotate: 360 }}
             transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
           />
