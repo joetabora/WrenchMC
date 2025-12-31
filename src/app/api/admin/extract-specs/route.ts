@@ -26,9 +26,10 @@ export async function POST(req: NextRequest) {
       : 'https://api.openai.com/v1/chat/completions'
     
     // Choose model - OpenRouter free models or OpenAI
-    // OpenRouter free models: google/gemini-2.0-flash-exp:free, meta-llama/llama-3.2-3b-instruct:free, etc.
+    // OpenRouter free models: Check https://openrouter.ai/models for current free models
+    // Common free models: meta-llama/llama-3.2-3b-instruct:free, qwen/qwen-2.5-7b-instruct:free
     const model = useOpenRouter
-      ? (process.env.OPENROUTER_MODEL || 'google/gemini-2.0-flash-exp:free') // Free model
+      ? (process.env.OPENROUTER_MODEL || 'meta-llama/llama-3.2-3b-instruct:free') // Free model (verified to work)
       : (process.env.OPENAI_MODEL || 'gpt-4o-mini')
 
     // Call AI API to extract specs

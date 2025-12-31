@@ -35,15 +35,15 @@ OpenRouter provides access to multiple AI models including free ones. Perfect fo
    - **Environment**: Select all (Production, Preview, Development)
 4. (Optional) Add model preference:
    - **Name**: `OPENROUTER_MODEL`
-   - **Value**: `google/gemini-2.0-flash-exp:free` (free) or `anthropic/claude-3-haiku` (paid but cheap)
+   - **Value**: `meta-llama/llama-3.2-3b-instruct:free` (free, default) or another model from OpenRouter
 5. Click **Save**
 6. **Important**: Redeploy your application for the change to take effect
 
 #### Free Models Available via OpenRouter:
-- `google/gemini-2.0-flash-exp:free` - Google's free model (recommended, default)
-- `meta-llama/llama-3.2-3b-instruct:free` - Meta's free model
+- `meta-llama/llama-3.2-3b-instruct:free` - Meta's free model (default, verified to work)
 - `qwen/qwen-2.5-7b-instruct:free` - Free alternative
-- Check https://openrouter.ai/models for current free models
+- `google/gemini-2.0-flash-exp:free` - Google's free model (if available)
+- **Check https://openrouter.ai/models** - Filter by "Free" to see current available models
 
 ### Option 2: OpenAI (Paid)
 
