@@ -66,10 +66,28 @@ Then add to Vercel:
 
 ## How to Use
 
-### Basic Usage
+### Option 1: Upload PDF Service Manuals (Recommended) 📄
+
+1. **Upload PDF**
+   - Click the upload area or drag and drop a PDF file
+   - Supports service manuals, technical documents
+   - Max file size: 10MB
+   - The system will automatically extract text from the PDF
+
+2. **Auto-Extraction**
+   - After PDF upload, text is extracted automatically
+   - Then AI extraction runs automatically
+   - Wait for processing (usually 10-30 seconds depending on PDF size)
+
+3. **Review and Submit**
+   - Check extracted specs on the right
+   - Verify accuracy
+   - Submit individually or bulk submit
+
+### Option 2: Paste Text
 
 1. **Find Source Material**
-   - Service manuals
+   - Service manuals (copy text sections)
    - Technical documentation
    - Forum posts with specs
    - Any text containing torque specs
@@ -86,7 +104,6 @@ Then add to Vercel:
 4. **Review Extracted Specs**
    - Check each extracted spec on the right
    - Verify accuracy
-   - Edit if needed (coming soon)
 
 5. **Submit**
    - Submit individual specs

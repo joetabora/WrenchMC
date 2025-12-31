@@ -1,6 +1,13 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: true
+  reactStrictMode: true,
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      // Handle pdf-parse for server-side
+      config.externals = [...(config.externals || []), 'canvas', 'jsdom']
+    }
+    return config
+  }
 }
 
 module.exports = nextConfig

@@ -6,19 +6,59 @@ import { useRouter } from 'next/navigation'
 import Button from '@/components/ui/Button'
 import Card from '@/components/ui/Card'
 import { motion } from 'framer-motion'
-import { Upload, FileText, Sparkles, CheckCircle, AlertCircle } from 'lucide-react'
+import { Upload, FileText, Sparkles, CheckCircle, AlertCircle, File } from 'lucide-react'
 
 export default function ImportPage() {
   const { user } = useAuth()
   const router = useRouter()
   const [sourceText, setSourceText] = useState('')
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [uploading, setUploading] = useState(false)
   const [loading, setLoading] = useState(false)
   const [extractedSpecs, setExtractedSpecs] = useState<any[]>([])
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
+  async function handleFileUpload(file: File) {
+    if (file.type !== 'application/pdf') {
+      setMessage({ type: 'error', text: 'Please upload a PDF file' })
+      return
+    }
+
+    setUploading(true)
+    setMessage(null)
+    setSourceText('')
+    setExtractedSpecs([])
+
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+
+      const res = await fetch('/api/admin/process-pdf', {
+        method: 'POST',
+        body: formData,
+      })
+
+      const data = await res.json()
+
+      if (res.ok && data.text) {
+        setSourceText(data.text)
+        setMessage({ type: 'success', text: `PDF processed! Extracted ${data.pageCount || 0} page(s). Click "Extract Specs" to continue.` })
+        // Auto-extract after PDF processing
+        setTimeout(() => extractSpecs(), 500)
+      } else {
+        setMessage({ type: 'error', text: data.error || 'Failed to process PDF' })
+      }
+    } catch (err: any) {
+      setMessage({ type: 'error', text: err.message || 'Error processing PDF' })
+    } finally {
+      setUploading(false)
+      setSelectedFile(null)
+    }
+  }
+
   async function extractSpecs() {
     if (!sourceText.trim()) {
-      setMessage({ type: 'error', text: 'Please enter source text' })
+      setMessage({ type: 'error', text: 'Please enter source text or upload a PDF' })
       return
     }
 
@@ -128,6 +168,64 @@ export default function ImportPage() {
             </div>
 
             <div className="space-y-4">
+              {/* PDF Upload Section */}
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <Upload className="w-4 h-4 inline mr-2" />
+                  Upload PDF Service Manual
+                </label>
+                <div className="border-2 border-dashed border-white/20 rounded-lg p-6 text-center hover:border-wrench-accent/50 transition-colors">
+                  <input
+                    type="file"
+                    accept=".pdf"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0]
+                      if (file) {
+                        setSelectedFile(file)
+                        handleFileUpload(file)
+                      }
+                    }}
+                    className="hidden"
+                    id="pdf-upload"
+                    disabled={uploading || loading}
+                  />
+                  <label
+                    htmlFor="pdf-upload"
+                    className={`cursor-pointer ${uploading || loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  >
+                    {uploading ? (
+                      <div className="space-y-2">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-wrench-accent mx-auto"></div>
+                        <p className="text-sm text-gray-400">Processing PDF...</p>
+                      </div>
+                    ) : selectedFile ? (
+                      <div className="space-y-2">
+                        <File className="w-8 h-8 text-wrench-accent mx-auto" />
+                        <p className="text-sm text-gray-300">{selectedFile.name}</p>
+                        <p className="text-xs text-gray-500">Click to select a different file</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        <Upload className="w-8 h-8 text-gray-400 mx-auto" />
+                        <p className="text-sm text-gray-300">Click to upload or drag and drop</p>
+                        <p className="text-xs text-gray-500">PDF files only (max 10MB)</p>
+                      </div>
+                    )}
+                  </label>
+                </div>
+              </div>
+
+              {/* Divider */}
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-white/10"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-2 bg-wrench-DEFAULT text-gray-400">Or</span>
+                </div>
+              </div>
+
+              {/* Text Input Section */}
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
                   Paste text from manuals, service guides, or documentation
@@ -136,7 +234,7 @@ export default function ImportPage() {
                   value={sourceText}
                   onChange={(e) => setSourceText(e.target.value)}
                   placeholder="Example:&#10;&#10;Transmission Cover Bolts:&#10;Torque: 20-25 Nm (15-18 ft-lbs)&#10;Bolt Size: M8&#10;Tighten in a star pattern starting from center...&#10;&#10;Head Bolts:&#10;Torque: 45-50 Nm&#10;Bolt Size: M10..."
-                  rows={15}
+                  rows={12}
                   className="w-full px-4 py-3 bg-white/10 dark:bg-gray-800/40 backdrop-blur-sm border border-white/20 dark:border-gray-700/50 rounded-lg text-gray-100 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-wrench-accent font-mono text-sm"
                 />
               </div>
