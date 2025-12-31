@@ -8,23 +8,41 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Source text is required' }, { status: 400 })
     }
 
-    // Check if OpenAI API key is configured
+    // Check for API keys - prefer OpenRouter (free options), fallback to OpenAI
+    const openRouterKey = process.env.OPENROUTER_API_KEY
     const openaiApiKey = process.env.OPENAI_API_KEY
-    if (!openaiApiKey) {
+    
+    if (!openRouterKey && !openaiApiKey) {
       return NextResponse.json({ 
-        error: 'OpenAI API key not configured. Add OPENAI_API_KEY to your environment variables.' 
+        error: 'No AI API key configured. Add OPENROUTER_API_KEY (recommended for free models) or OPENAI_API_KEY to your environment variables.' 
       }, { status: 500 })
     }
 
-    // Call OpenAI API to extract specs
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    // Use OpenRouter if available (has free models), otherwise OpenAI
+    const useOpenRouter = !!openRouterKey
+    const apiKey = openRouterKey || openaiApiKey
+    const apiUrl = useOpenRouter 
+      ? 'https://openrouter.ai/api/v1/chat/completions'
+      : 'https://api.openai.com/v1/chat/completions'
+    
+    // Choose model - OpenRouter free models or OpenAI
+    const model = useOpenRouter
+      ? (process.env.OPENROUTER_MODEL || 'google/gemini-flash-1.5:free') // Free model
+      : (process.env.OPENAI_MODEL || 'gpt-4o-mini')
+
+    // Call AI API to extract specs
+    const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${openaiApiKey}`,
+        'Authorization': `Bearer ${apiKey}`,
+        ...(useOpenRouter && {
+          'HTTP-Referer': process.env.NEXT_PUBLIC_SITE_URL || 'https://wrenchmc.vercel.app',
+          'X-Title': 'WrenchMC Spec Import'
+        })
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini', // Using cheaper model, can upgrade to gpt-4 if needed
+        model: model,
         messages: [
           {
             role: 'system',
@@ -71,7 +89,7 @@ Rules:
     if (!response.ok) {
       const error = await response.json()
       return NextResponse.json({ 
-        error: `OpenAI API error: ${error.error?.message || 'Unknown error'}` 
+        error: `AI API error: ${error.error?.message || error.message || 'Unknown error'}` 
       }, { status: 500 })
     }
 

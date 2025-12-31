@@ -260,7 +260,7 @@ export default function ImportPage() {
               <li>Submit individual specs or submit all at once</li>
             </ol>
             <p className="text-xs text-gray-500 mt-4">
-              <strong>Note:</strong> Requires OpenAI API key configured in environment variables
+              <strong>Note:</strong> Requires OpenRouter API key (free models available) or OpenAI API key configured in environment variables
             </p>
           </Card>
         </motion.div>
