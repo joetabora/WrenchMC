@@ -47,6 +47,15 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
 }
 
 
+// Validate ../../../src/app/admin/import/page.tsx
+{
+  type __IsExpected<Specific extends AppPageConfig<"/admin/import">> = Specific
+  const handler = {} as typeof import("../../../src/app/admin/import/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
 // Validate ../../../src/app/admin/moderation/page.tsx
 {
   type __IsExpected<Specific extends AppPageConfig<"/admin/moderation">> = Specific
@@ -114,6 +123,24 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
 {
   type __IsExpected<Specific extends RouteHandlerConfig<"/api/admin/approve">> = Specific
   const handler = {} as typeof import("../../../src/app/api/admin/approve/route.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../../src/app/api/admin/extract-specs/route.ts
+{
+  type __IsExpected<Specific extends RouteHandlerConfig<"/api/admin/extract-specs">> = Specific
+  const handler = {} as typeof import("../../../src/app/api/admin/extract-specs/route.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../../src/app/api/admin/process-pdf/route.ts
+{
+  type __IsExpected<Specific extends RouteHandlerConfig<"/api/admin/process-pdf">> = Specific
+  const handler = {} as typeof import("../../../src/app/api/admin/process-pdf/route.js")
   type __Check = __IsExpected<typeof handler>
   // @ts-ignore
   type __Unused = __Check
