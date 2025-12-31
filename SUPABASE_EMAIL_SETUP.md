@@ -71,3 +71,4 @@ For immediate testing without email setup:
 ### "Email confirmation required"
 - Either disable it in settings (dev) or configure SMTP (production)
 
+
