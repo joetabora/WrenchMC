@@ -30,6 +30,15 @@ export default function ImportPage() {
     setExtractedSpecs([])
 
     try {
+      // Check file size before upload (4MB limit due to Vercel body size restrictions)
+      const maxSize = 4 * 1024 * 1024 // 4MB (Vercel limit is 4.5MB, using 4MB to be safe)
+      if (file.size > maxSize) {
+        setMessage({ type: 'error', text: 'File size must be less than 4MB due to Vercel limits. Please use a smaller PDF, extract specific pages, or paste text manually.' })
+        setUploading(false)
+        setSelectedFile(null)
+        return
+      }
+
       const formData = new FormData()
       formData.append('file', file)
 
@@ -38,18 +47,37 @@ export default function ImportPage() {
         body: formData,
       })
 
-      const data = await res.json()
+      // Check if response is JSON
+      const contentType = res.headers.get('content-type')
+      let data
+      
+      if (contentType && contentType.includes('application/json')) {
+        data = await res.json()
+      } else {
+        // Handle non-JSON response (e.g., Vercel body size limit error)
+        const text = await res.text()
+        throw new Error(text || `Server error: ${res.status} ${res.statusText}`)
+      }
 
       if (res.ok && data.text) {
         setSourceText(data.text)
-        setMessage({ type: 'success', text: `PDF processed! Extracted ${data.pageCount || 0} page(s). Click "Extract Specs" to continue.` })
+        setMessage({ type: 'success', text: `PDF processed! Extracted ${data.pageCount || 0} page(s). Extracting specs...` })
         // Auto-extract after PDF processing
         setTimeout(() => extractSpecs(), 500)
       } else {
         setMessage({ type: 'error', text: data.error || 'Failed to process PDF' })
       }
     } catch (err: any) {
-      setMessage({ type: 'error', text: err.message || 'Error processing PDF' })
+      let errorMessage = err.message || 'Error processing PDF'
+      
+      // Handle common Vercel errors
+      if (errorMessage.includes('Request Entity Too Large') || errorMessage.includes('413')) {
+        errorMessage = 'File is too large. Vercel has a 4.5MB body size limit. Please use a smaller PDF or split it into sections.'
+      } else if (errorMessage.includes('Request En')) {
+        errorMessage = 'File upload failed. The file may be too large or the server timed out. Try a smaller PDF.'
+      }
+      
+      setMessage({ type: 'error', text: errorMessage })
     } finally {
       setUploading(false)
       setSelectedFile(null)
@@ -208,7 +236,7 @@ export default function ImportPage() {
                       <div className="space-y-2">
                         <Upload className="w-8 h-8 text-gray-400 mx-auto" />
                         <p className="text-sm text-gray-300">Click to upload or drag and drop</p>
-                        <p className="text-xs text-gray-500">PDF files only (max 10MB)</p>
+                        <p className="text-xs text-gray-500">PDF files only (max 4MB due to Vercel limits)</p>
                       </div>
                     )}
                   </label>

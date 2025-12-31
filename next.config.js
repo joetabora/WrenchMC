@@ -10,7 +10,13 @@ const nextConfig = {
       config.externals = [...(config.externals || []), 'canvas', 'jsdom']
     }
     return config
-  }
+  },
+  // Increase body size limit for PDF uploads (Vercel has a 4.5MB limit, so we'll use 4MB to be safe)
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '4mb',
+    },
+  },
 }
 
 module.exports = nextConfig
