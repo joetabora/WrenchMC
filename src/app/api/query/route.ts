@@ -1,7 +1,6 @@
 // AI-powered query endpoint using Grok with RAG
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { auth } from '@/lib/auth'
 import { queryGrokWithRAG, queryGrok } from '@/lib/grok'
 import { searchSimilarContent } from '@/lib/embeddings'
 import { prisma } from '@/lib/prisma'
@@ -9,7 +8,7 @@ import { searchYouTubeVideos } from '@/lib/youtube'
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await auth()
     const { query } = await req.json()
 
     if (!query || typeof query !== 'string') {

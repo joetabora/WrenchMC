@@ -1,12 +1,12 @@
 // NextAuth configuration for WrenchMC Goliath
-import { NextAuthOptions } from 'next-auth'
+import NextAuth, { NextAuthConfig } from 'next-auth'
 import { PrismaAdapter } from '@auth/prisma-adapter'
 import GoogleProvider from 'next-auth/providers/google'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import { prisma } from './prisma'
 import bcrypt from 'bcryptjs'
 
-export const authOptions: NextAuthOptions = {
+export const authOptions: NextAuthConfig = {
   adapter: PrismaAdapter(prisma) as any,
   providers: [
     GoogleProvider({
@@ -78,4 +78,7 @@ export const authOptions: NextAuthOptions = {
   },
   secret: process.env.NEXTAUTH_SECRET,
 }
+
+// Export auth function for NextAuth v5
+export const { handlers, auth, signIn, signOut } = NextAuth(authOptions as any)
 
