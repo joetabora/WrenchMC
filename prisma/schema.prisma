@@ -128,7 +128,7 @@ model Spec {
   @@index([componentName])
   @@index([approved])
   @@index([submittedBy])
-  @@fulltext([componentName, sequenceNotes])
+  // Fulltext search can be implemented at application level or with PostgreSQL extensions
 }
 
 // Votes on specs
@@ -163,6 +163,8 @@ model Tutorial {
   difficulty    String?  // beginner, intermediate, advanced
   submittedBy   String?
   user          User?    @relation(fields: [submittedBy], references: [id], onDelete: SetNull)
+  modelId       String?
+  model         HarleyModel? @relation(fields: [modelId], references: [id], onDelete: SetNull)
   approved      Boolean  @default(true)
   featured      Boolean  @default(false)
   createdAt     DateTime @default(now())
@@ -170,7 +172,8 @@ model Tutorial {
 
   @@index([youtubeId])
   @@index([approved, featured])
-  @@fulltext([title, description])
+  @@index([modelId])
+  // Fulltext search can be implemented at application level or with PostgreSQL extensions
 }
 
 // Community forum posts
@@ -194,7 +197,7 @@ model ForumPost {
   @@index([authorId])
   @@index([modelId])
   @@index([pinned, createdAt])
-  @@fulltext([title, content])
+  // Fulltext search can be implemented at application level or with PostgreSQL extensions
 }
 
 // Forum post replies
@@ -262,5 +265,5 @@ model Part {
 
   @@index([partNumber])
   @@index([name])
-  @@fulltext([name, description])
+  // Fulltext search can be implemented at application level or with PostgreSQL extensions
 }

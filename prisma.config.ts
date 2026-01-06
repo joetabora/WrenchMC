@@ -3,13 +3,25 @@
 import "dotenv/config";
 import { defineConfig } from "prisma/config";
 
+// Ensure environment variables are loaded
+const prismaUrl = process.env["PRISMA_DATABASE_URL"];
+const postgresUrl = process.env["POSTGRES_URL"];
+
+if (!prismaUrl) {
+  throw new Error("PRISMA_DATABASE_URL is required in .env.local");
+}
+
+if (!postgresUrl) {
+  throw new Error("POSTGRES_URL is required in .env.local");
+}
+
 export default defineConfig({
   schema: "prisma/schema.prisma",
   migrations: {
     path: "prisma/migrations",
   },
   datasource: {
-    url: process.env["PRISMA_DATABASE_URL"], // Prisma Accelerate (pooled) for Prisma Client
-    directUrl: process.env["POSTGRES_URL"],   // Direct connection for migrations
+    url: prismaUrl,      // Prisma Accelerate (pooled) for Prisma Client
+    directUrl: postgresUrl, // Direct connection for migrations
   },
 });
