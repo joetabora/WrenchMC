@@ -5,6 +5,7 @@ import { queryGrokWithRAG, queryGrok } from '@/lib/grok'
 import { searchSimilarContent } from '@/lib/embeddings'
 import { prisma } from '@/lib/prisma'
 import { searchYouTubeVideos } from '@/lib/youtube'
+import { Prisma } from '@prisma/client'
 
 export async function POST(req: NextRequest) {
   try {
@@ -36,10 +37,14 @@ export async function POST(req: NextRequest) {
     })
 
     // Combine context from vector search and database
+    type SpecWithUser = Prisma.SpecGetPayload<{
+      include: { user: { select: { name: true; email: true } } }
+    }>
+    
     const context = [
       ...similarContent.map((c) => c.text),
       ...dbSpecs.map(
-        (s: any) =>
+        (s: SpecWithUser) =>
           `${s.componentName}: Torque ${s.torqueSpecLow || ''}-${s.torqueSpecHigh || ''} Nm, Bolt: ${s.boltSize || 'N/A'}. ${s.sequenceNotes || ''}`
       ),
     ]
