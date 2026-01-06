@@ -64,7 +64,11 @@ export default function ForumPage() {
         {loading ? (
           <div className="space-y-4">
             {[...Array(5)].map((_, i) => (
-              <Card key={i} className="animate-pulse h-32" />
+              <Card key={i} className="animate-pulse h-32">
+                <div className="h-6 bg-wrench-light rounded w-3/4 mb-4"></div>
+                <div className="h-4 bg-wrench-light rounded w-full mb-2"></div>
+                <div className="h-4 bg-wrench-light rounded w-2/3"></div>
+              </Card>
             ))}
           </div>
         ) : posts.length === 0 ? (
