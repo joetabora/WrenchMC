@@ -7,8 +7,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("PRISMA_DATABASE_URL")  // Prisma Accelerate connection (pooled)
-  directUrl = env("POSTGRES_URL")        // Direct connection for migrations
+  // Connection URLs are configured in prisma.config.ts (Prisma 7 requirement)
 }
 
 // User accounts (NextAuth)
