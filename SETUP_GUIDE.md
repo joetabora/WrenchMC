@@ -6,46 +6,103 @@ This guide will walk you through setting up every platform and service needed fo
 
 ---
 
-## 1. Vercel Postgres Database Setup
+## 1. Database Setup (Choose One Option)
 
-### Step 1: Create Vercel Account
+Vercel offers several Postgres database options. We recommend **Prisma Postgres** for the easiest setup, but **Neon** is also an excellent choice.
+
+### Option A: Prisma Postgres (Recommended - Easiest Setup)
+
+#### Step 1: Create Vercel Account
 1. Go to [vercel.com](https://vercel.com)
 2. Click **"Sign Up"** (use GitHub, GitLab, or email)
 3. Complete account verification
 
-### Step 2: Create a New Project
+#### Step 2: Create a New Project
 1. In Vercel Dashboard, click **"Add New..."** → **"Project"**
 2. Import your GitHub repository (or create a new one)
 3. Click **"Skip"** on framework configuration (we'll configure later)
 
-### Step 3: Create Postgres Database
+#### Step 3: Create Prisma Postgres Database
 1. In Vercel Dashboard, go to **"Storage"** tab (left sidebar)
 2. Click **"Create Database"**
-3. Select **"Postgres"**
-4. Choose a name (e.g., `wrenchmc-db`)
-5. Select a region (choose closest to your users)
-6. Click **"Create"**
+3. In the marketplace, find and select **"Prisma Postgres"** (or search for it)
+4. Click **"Create"** or **"Add Integration"**
+5. Choose a name (e.g., `wrenchmc-db`)
+6. Select a region (choose closest to your users)
+7. Click **"Create"** or **"Provision"**
 
-### Step 4: Get Connection Strings
+#### Step 4: Get Connection Strings
 1. Once database is created, click on it
-2. Go to **".env.local"** tab
-3. You'll see two connection strings:
+2. Look for **"Connection Strings"** or **".env.local"** tab
+3. You'll see connection strings - copy them:
    - **`POSTGRES_PRISMA_URL`** - Pooled connection (for Prisma)
    - **`POSTGRES_URL_NON_POOLING`** - Direct connection (for migrations)
 
 4. Copy both strings - you'll add them to your `.env.local` file
 
-### Step 5: Initialize Database Schema
+**Note:** Prisma Postgres automatically provides Prisma-compatible connection strings.
+
+---
+
+### Option B: Neon (Serverless Postgres - Alternative)
+
+#### Step 1: Create Database via Vercel
+1. In Vercel Dashboard, go to **"Storage"** tab
+2. Click **"Create Database"**
+3. Select **"Neon"** from the marketplace
+4. Click **"Add Integration"** or **"Create"**
+5. You may need to authorize Neon (first time only)
+6. Choose a name and region
+7. Click **"Create Database"**
+
+#### Step 2: Get Connection Strings
+1. Click on your Neon database
+2. Go to **"Settings"** or **"Connection Details"**
+3. Copy the connection strings:
+   - **`POSTGRES_PRISMA_URL`** - Use the connection string with `?pgbouncer=true` appended
+   - **`POSTGRES_URL_NON_POOLING`** - Use the direct connection string (without pooling)
+
+**Note:** Neon provides serverless Postgres with automatic scaling.
+
+---
+
+### Option C: Supabase (If You Prefer)
+
+#### Step 1: Create Database via Vercel
+1. In Vercel Dashboard, go to **"Storage"** tab
+2. Click **"Create Database"**
+3. Select **"Supabase"** from the marketplace
+4. Click **"Add Integration"**
+5. Authorize Supabase if needed
+6. Create a new project or link existing one
+7. Choose a name and region
+
+#### Step 2: Get Connection Strings
+1. In Supabase dashboard, go to **"Settings"** → **"Database"**
+2. Find **"Connection string"** section
+3. Copy:
+   - **`POSTGRES_PRISMA_URL`** - Use "Connection pooling" → "Session" mode connection string
+   - **`POSTGRES_URL_NON_POOLING`** - Use "Connection string" (direct connection)
+
+**Note:** Supabase includes additional features like auth and storage, but we're only using Postgres.
+
+### Step 5: Initialize Database Schema (All Options)
+
 1. In your project root, create `.env.local` file:
    ```bash
    touch .env.local
    ```
 
-2. Add the connection strings:
+2. Add the connection strings you copied:
    ```env
    POSTGRES_PRISMA_URL="postgresql://user:pass@host:5432/db?pgbouncer=true"
    POSTGRES_URL_NON_POOLING="postgresql://user:pass@host:5432/db"
    ```
+
+   **Important Notes:**
+   - For **Prisma Postgres**: Connection strings are already formatted correctly
+   - For **Neon**: Add `?pgbouncer=true` to the pooled URL if not present
+   - For **Supabase**: Use the "Session" mode connection string for pooled URL
 
 3. Run Prisma commands:
    ```bash
@@ -63,6 +120,11 @@ This guide will walk you through setting up every platform and service needed fo
    ```
    - This opens a browser at `http://localhost:5555`
    - You should see empty tables (User, Spec, Tutorial, etc.)
+
+**Troubleshooting Connection:**
+- If migrations fail, try using `POSTGRES_URL_NON_POOLING` for migrations
+- Ensure connection strings don't have extra spaces or quotes
+- For Neon: Make sure you're using the correct connection string format
 
 ---
 
@@ -338,8 +400,7 @@ OPENAI_API_KEY="sk-your-actual-api-key-here"
 
 Your final `.env.local` should look like this:
 
-```env
-# Database (Vercel Postgres) - REQUIRED
+# Database (Choose one: Prisma Postgres, Neon, or Supabase) - REQUIRED
 POSTGRES_PRISMA_URL="postgresql://user:pass@host:5432/db?pgbouncer=true"
 POSTGRES_URL_NON_POOLING="postgresql://user:pass@host:5432/db"
 
@@ -405,11 +466,14 @@ npm run dev
 ## 🚨 Troubleshooting Common Issues
 
 ### Database Connection Fails
-- **Problem**: `Can't reach database server`
+- **Problem**: `Can't reach database server` or `Connection refused`
 - **Solution**: 
-  - Verify connection strings are correct
-  - Check `POSTGRES_PRISMA_URL` has `?pgbouncer=true`
-  - Ensure database is created in Vercel
+  - Verify connection strings are correct (copied from database dashboard)
+  - Check `POSTGRES_PRISMA_URL` has `?pgbouncer=true` (for pooled connections)
+  - Ensure database is created and provisioned in Vercel
+  - For Neon: Check that database is not paused (Neon pauses inactive databases)
+  - For Supabase: Verify project is active and not suspended
+  - Try using `POSTGRES_URL_NON_POOLING` for migrations if pooled connection fails
 
 ### AI Queries Return Errors
 - **Problem**: `XAI_API_KEY not configured` or `401 Unauthorized`
