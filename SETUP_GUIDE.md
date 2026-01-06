@@ -34,13 +34,14 @@ Vercel offers several Postgres database options. We recommend **Prisma Postgres*
 #### Step 4: Get Connection Strings
 1. Once database is created, click on it
 2. Look for **"Connection Strings"** or **".env.local"** tab
-3. You'll see connection strings - copy them:
-   - **`POSTGRES_PRISMA_URL`** - Pooled connection (for Prisma)
-   - **`POSTGRES_URL_NON_POOLING`** - Direct connection (for migrations)
+3. You'll see three connection strings - copy them:
+   - **`PRISMA_DATABASE_URL`** - Prisma Accelerate connection (pooled, for Prisma Client)
+   - **`POSTGRES_URL`** or **`DATABASE_URL`** - Direct connection (for migrations)
+   - Both direct connection strings are the same, use either one
 
-4. Copy both strings - you'll add them to your `.env.local` file
+4. Copy all strings - you'll add them to your `.env.local` file
 
-**Note:** Prisma Postgres automatically provides Prisma-compatible connection strings.
+**Note:** Prisma Postgres uses Prisma Accelerate for connection pooling, which is why you see `PRISMA_DATABASE_URL` with a special format (`prisma+postgres://...`).
 
 ---
 
@@ -94,15 +95,29 @@ Vercel offers several Postgres database options. We recommend **Prisma Postgres*
    ```
 
 2. Add the connection strings you copied:
+
+   **For Prisma Postgres:**
+   ```env
+   PRISMA_DATABASE_URL="prisma+postgres://accelerate.prisma-data.net/?api_key=..."
+   POSTGRES_URL="postgres://user:pass@db.prisma.io:5432/postgres?sslmode=require"
+   POSTGRES_URL_NON_POOLING="postgres://user:pass@db.prisma.io:5432/postgres?sslmode=require"
+   ```
+   - Use `PRISMA_DATABASE_URL` for Prisma Client (pooled connection)
+   - Use `POSTGRES_URL` or `POSTGRES_URL_NON_POOLING` for migrations (both are the same)
+
+   **For Neon:**
    ```env
    POSTGRES_PRISMA_URL="postgresql://user:pass@host:5432/db?pgbouncer=true"
    POSTGRES_URL_NON_POOLING="postgresql://user:pass@host:5432/db"
    ```
+   - Add `?pgbouncer=true` to the pooled URL if not present
 
-   **Important Notes:**
-   - For **Prisma Postgres**: Connection strings are already formatted correctly
-   - For **Neon**: Add `?pgbouncer=true` to the pooled URL if not present
-   - For **Supabase**: Use the "Session" mode connection string for pooled URL
+   **For Supabase:**
+   ```env
+   POSTGRES_PRISMA_URL="postgresql://user:pass@host:5432/db?pgbouncer=true"
+   POSTGRES_URL_NON_POOLING="postgresql://user:pass@host:5432/db"
+   ```
+   - Use the "Session" mode connection string for pooled URL
 
 3. Run Prisma commands:
    ```bash
@@ -469,11 +484,17 @@ npm run dev
 - **Problem**: `Can't reach database server` or `Connection refused`
 - **Solution**: 
   - Verify connection strings are correct (copied from database dashboard)
-  - Check `POSTGRES_PRISMA_URL` has `?pgbouncer=true` (for pooled connections)
-  - Ensure database is created and provisioned in Vercel
-  - For Neon: Check that database is not paused (Neon pauses inactive databases)
-  - For Supabase: Verify project is active and not suspended
-  - Try using `POSTGRES_URL_NON_POOLING` for migrations if pooled connection fails
+  - **For Prisma Postgres**: 
+    - Use `PRISMA_DATABASE_URL` for Prisma Client (not `POSTGRES_PRISMA_URL`)
+    - Use `POSTGRES_URL` for migrations (direct connection)
+    - Ensure Prisma schema uses `PRISMA_DATABASE_URL` in `url` field
+  - **For Neon**: 
+    - Check `POSTGRES_PRISMA_URL` has `?pgbouncer=true` (for pooled connections)
+    - Check that database is not paused (Neon pauses inactive databases)
+  - **For Supabase**: 
+    - Verify project is active and not suspended
+    - Use "Session" mode connection string for pooled URL
+  - Try using direct connection (`POSTGRES_URL` or `POSTGRES_URL_NON_POOLING`) for migrations if pooled connection fails
 
 ### AI Queries Return Errors
 - **Problem**: `XAI_API_KEY not configured` or `401 Unauthorized`
