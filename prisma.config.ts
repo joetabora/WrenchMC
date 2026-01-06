@@ -1,10 +1,15 @@
 // Prisma 7 Configuration
 // Connection URLs must be here, not in schema.prisma
-import "dotenv/config";
+import { config } from "dotenv";
+import { resolve } from "path";
 import { defineConfig } from "prisma/config";
 
-// Load environment variables from .env.local
-// dotenv/config automatically loads .env.local if it exists
+// Explicitly load .env.local file
+config({ path: resolve(process.cwd(), ".env.local") });
+// Also try .env as fallback
+config({ path: resolve(process.cwd(), ".env") });
+
+// Load environment variables
 const prismaUrl = process.env["PRISMA_DATABASE_URL"];
 const postgresUrl = process.env["POSTGRES_URL"];
 
