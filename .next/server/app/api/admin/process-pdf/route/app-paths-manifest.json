@@ -1,0 +1,3 @@
+{
+  "/api/admin/process-pdf/route": "app/api/admin/process-pdf/route.js"
+}

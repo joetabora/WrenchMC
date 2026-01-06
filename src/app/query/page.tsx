@@ -1,5 +1,7 @@
 'use client'
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, Suspense } from 'react'
+
+export const dynamic = 'force-dynamic'
 import { useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import Button from '@/components/ui/Button'
@@ -17,7 +19,7 @@ interface QueryResponse {
   similarContent: Array<{ text: string; sourceType: string; score: number }>
 }
 
-export default function QueryPage() {
+function QueryPageContent() {
   const searchParams = useSearchParams()
   const initialQuery = searchParams.get('q') || ''
   
@@ -226,6 +228,18 @@ export default function QueryPage() {
         </AnimatePresence>
       </div>
     </div>
+  )
+}
+
+export default function QueryPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen py-12 px-6 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-wrench-accent animate-spin" />
+      </div>
+    }>
+      <QueryPageContent />
+    </Suspense>
   )
 }
 

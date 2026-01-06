@@ -1,7 +1,6 @@
 "use client"
 import React, { useState, useEffect } from 'react'
-import { useAuth } from '@/components/AuthProvider'
-import { supabase } from '@/lib/supabaseClient'
+import { useSession } from 'next-auth/react'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import { Save, CheckCircle, AlertCircle } from 'lucide-react'
@@ -11,7 +10,8 @@ const MODELS = ['Softail', 'Sportster', 'Dyna', 'Road King', 'Street Glide', 'Fa
 const VARIANTS = ['Standard', 'Custom', 'Limited', 'Special', 'Deluxe']
 
 export default function BikeSelector({ onChange }: { onChange?: (v: any) => void }) {
-  const { user } = useAuth()
+  const { data: session } = useSession()
+  const user = session?.user
   const [year, setYear] = useState('')
   const [model, setModel] = useState('')
   const [variant, setVariant] = useState('')
@@ -31,17 +31,7 @@ export default function BikeSelector({ onChange }: { onChange?: (v: any) => void
     
     setLoading(true)
     try {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) {
-        setLoading(false)
-        return
-      }
-
-      const res = await fetch('/api/profile', {
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`,
-        },
-      })
+      const res = await fetch('/api/profile')
 
       if (res.ok) {
         const { profile } = await res.json()
@@ -78,9 +68,8 @@ export default function BikeSelector({ onChange }: { onChange?: (v: any) => void
     setMessage(null)
 
     try {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) {
-        setMessage({ type: 'error', text: 'Session expired. Please sign in again.' })
+      if (!user) {
+        setMessage({ type: 'error', text: 'Please sign in to save your bike profile' })
         setSaving(false)
         return
       }
@@ -95,7 +84,6 @@ export default function BikeSelector({ onChange }: { onChange?: (v: any) => void
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify(bikeData),
       })

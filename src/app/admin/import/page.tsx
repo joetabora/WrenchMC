@@ -1,7 +1,8 @@
 "use client"
 import React, { useState } from 'react'
-import { useAuth } from '@/components/AuthProvider'
-import { supabase } from '@/lib/supabaseClient'
+
+export const dynamic = 'force-dynamic'
+import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Button from '@/components/ui/Button'
 import Card from '@/components/ui/Card'
@@ -9,7 +10,8 @@ import { motion } from 'framer-motion'
 import { Upload, FileText, Sparkles, CheckCircle, AlertCircle, File } from 'lucide-react'
 
 export default function ImportPage() {
-  const { user } = useAuth()
+  const { data: session } = useSession()
+  const user = session?.user
   const router = useRouter()
   const [sourceText, setSourceText] = useState('')
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
@@ -118,9 +120,8 @@ export default function ImportPage() {
 
   async function submitSpec(spec: any, index: number) {
     try {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) {
-        setMessage({ type: 'error', text: 'Session expired. Please sign in again.' })
+      if (!user) {
+        setMessage({ type: 'error', text: 'Please sign in to submit specs' })
         return
       }
 
@@ -128,7 +129,6 @@ export default function ImportPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
           ...spec,

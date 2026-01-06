@@ -24,16 +24,17 @@ const config: NextAuthConfig = {
           return null
         }
 
+        const email = credentials.email as string
         const user = await prisma.user.findUnique({
-          where: { email: credentials.email },
+          where: { email },
         })
 
         if (!user) {
           // Create new user if signing up
           const newUser = await prisma.user.create({
             data: {
-              email: credentials.email,
-              name: credentials.email.split('@')[0],
+              email,
+              name: email.split('@')[0],
             },
           })
           return {
@@ -58,16 +59,16 @@ const config: NextAuthConfig = {
     error: '/auth/login',
   },
   callbacks: {
-    async session({ session, user }) {
-      if (session.user && user) {
+    async session({ session, user }: any) {
+      if (session?.user && user) {
         session.user.id = user.id
         const dbUser = await prisma.user.findUnique({
           where: { id: user.id },
           include: { profile: true },
         })
         if (dbUser) {
-          (session.user as any).role = dbUser.role
-          (session.user as any).verified = dbUser.verified
+          session.user.role = dbUser.role
+          session.user.verified = dbUser.verified
         }
       }
       return session

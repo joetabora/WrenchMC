@@ -4,6 +4,11 @@ import { prisma } from '@/lib/prisma'
 
 export async function GET(req: NextRequest) {
   try {
+    // During build, return empty array to avoid database connection errors
+    if (process.env.NEXT_PHASE === 'phase-production-build') {
+      return NextResponse.json({ posts: [] })
+    }
+    
     const posts = await prisma.forumPost.findMany({
       where: {
         locked: false,

@@ -9,7 +9,7 @@ export const prisma =
   globalForPrisma.prisma ??
   new PrismaClient({
     // Use Prisma Accelerate URL for pooled connections
-    // This is set via PRISMA_DATABASE_URL in prisma.config.ts
+    accelerateUrl: process.env.PRISMA_DATABASE_URL,
     log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
   })
 

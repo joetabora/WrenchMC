@@ -1,15 +1,19 @@
 "use client"
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '@/components/AuthProvider'
+import { useSession } from 'next-auth/react'
+
+export const dynamic = 'force-dynamic'
 import BikeSelector from '@/components/BikeSelector'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import { motion } from 'framer-motion'
 import { User, Bike, Mail, LogOut } from 'lucide-react'
+import { signOut as nextAuthSignOut } from 'next-auth/react'
 
 export default function ProfilePage() {
-  const { user, signOut } = useAuth()
+  const { data: session } = useSession()
+  const user = session?.user
   const router = useRouter()
   const [profile, setProfile] = useState<any>(null)
 
@@ -61,16 +65,16 @@ export default function ProfilePage() {
             <div className="space-y-3">
               <div>
                 <p className="text-sm text-gray-500 mb-1">Email</p>
-                <p className="text-gray-200 font-medium">{user.email}</p>
+                <p className="text-gray-200 font-medium">{user.email || 'N/A'}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-500 mb-1">User ID</p>
-                <p className="text-gray-400 text-xs font-mono">{user.id}</p>
+                <p className="text-gray-400 text-xs font-mono">{(user as any)?.id || 'N/A'}</p>
               </div>
               <Button
                 variant="outline"
                 onClick={async () => {
-                  await signOut()
+                  await nextAuthSignOut({ redirect: false })
                   router.push('/')
                 }}
                 className="w-full mt-4"

@@ -23,7 +23,7 @@ export default function SearchPage() {
       const res = await fetch('/api/search', { 
         method: 'POST', 
         headers: { 'Content-Type': 'application/json' }, 
-        body: JSON.stringify({ query, bike_year: bike?.year, bike_model: bike?.model }) 
+        body: JSON.stringify({ query, bike_year: (bike as any)?.year, bike_model: (bike as any)?.model }) 
       })
       const data = await res.json()
       setResults(data.results || [])

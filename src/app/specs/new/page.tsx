@@ -1,8 +1,9 @@
 "use client"
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '@/components/AuthProvider'
-import { supabase } from '@/lib/supabaseClient'
+import { useSession } from 'next-auth/react'
+
+export const dynamic = 'force-dynamic'
 import Input from '@/components/ui/Input'
 import Button from '@/components/ui/Button'
 import Card from '@/components/ui/Card'
@@ -13,7 +14,8 @@ const YEARS = Array.from({ length: 30 }, (_, i) => String(1995 + i))
 const MODELS = ['Softail', 'Sportster', 'Dyna', 'Road King', 'Street Glide', 'Fat Boy', 'Heritage Classic', 'Low Rider', 'Electra Glide', 'Road Glide', 'All Models']
 
 export default function NewSpecPage() {
-  const { user } = useAuth()
+  const { data: session } = useSession()
+  const user = session?.user
   const router = useRouter()
   const [componentName, setComponentName] = useState('')
   const [boltSize, setBoltSize] = useState('')
@@ -43,9 +45,8 @@ export default function NewSpecPage() {
     setMessage(null)
 
     try {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) {
-        setMessage({ type: 'error', text: 'Session expired. Please sign in again.' })
+      if (!user) {
+        setMessage({ type: 'error', text: 'Please sign in to submit specs' })
         setLoading(false)
         return
       }
@@ -59,14 +60,13 @@ export default function NewSpecPage() {
         applicable_years: applicableYears,
         applicable_models: applicableModels,
         source_notes: sourceNotes || null,
-        submitted_by: user.id
+        submitted_by: (user as any).id
       }
 
       const res = await fetch('/api/specs', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify(body)
       })
