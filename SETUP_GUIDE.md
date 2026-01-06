@@ -1,143 +1,464 @@
-# WrenchMC Goliath - Setup Guide
+# WrenchMC Goliath - Complete Setup Guide
 
-## 🚀 Quick Start
+## 🚀 Quick Start Overview
 
-### 1. Environment Variables
+This guide will walk you through setting up every platform and service needed for WrenchMC Goliath. Follow each section in order.
 
-Create `.env.local` with these required variables:
+---
+
+## 1. Vercel Postgres Database Setup
+
+### Step 1: Create Vercel Account
+1. Go to [vercel.com](https://vercel.com)
+2. Click **"Sign Up"** (use GitHub, GitLab, or email)
+3. Complete account verification
+
+### Step 2: Create a New Project
+1. In Vercel Dashboard, click **"Add New..."** → **"Project"**
+2. Import your GitHub repository (or create a new one)
+3. Click **"Skip"** on framework configuration (we'll configure later)
+
+### Step 3: Create Postgres Database
+1. In Vercel Dashboard, go to **"Storage"** tab (left sidebar)
+2. Click **"Create Database"**
+3. Select **"Postgres"**
+4. Choose a name (e.g., `wrenchmc-db`)
+5. Select a region (choose closest to your users)
+6. Click **"Create"**
+
+### Step 4: Get Connection Strings
+1. Once database is created, click on it
+2. Go to **".env.local"** tab
+3. You'll see two connection strings:
+   - **`POSTGRES_PRISMA_URL`** - Pooled connection (for Prisma)
+   - **`POSTGRES_URL_NON_POOLING`** - Direct connection (for migrations)
+
+4. Copy both strings - you'll add them to your `.env.local` file
+
+### Step 5: Initialize Database Schema
+1. In your project root, create `.env.local` file:
+   ```bash
+   touch .env.local
+   ```
+
+2. Add the connection strings:
+   ```env
+   POSTGRES_PRISMA_URL="postgresql://user:pass@host:5432/db?pgbouncer=true"
+   POSTGRES_URL_NON_POOLING="postgresql://user:pass@host:5432/db"
+   ```
+
+3. Run Prisma commands:
+   ```bash
+   # Generate Prisma Client
+   npm run db:generate
+
+   # Create and run migrations
+   npm run db:migrate
+   ```
+
+4. Verify it worked:
+   ```bash
+   # Open Prisma Studio to see your database
+   npm run db:studio
+   ```
+   - This opens a browser at `http://localhost:5555`
+   - You should see empty tables (User, Spec, Tutorial, etc.)
+
+---
+
+## 2. xAI Grok API Setup (REQUIRED for AI Queries)
+
+### Step 1: Sign Up for xAI
+1. Go to [x.ai](https://x.ai)
+2. Click **"Sign Up"** or **"Get Started"**
+3. Sign up with your email or X (Twitter) account
+4. Verify your email if required
+
+### Step 2: Access API Dashboard
+1. Once logged in, look for **"API"** or **"Developers"** section
+2. Navigate to **"API Keys"** or **"Developer Portal"**
+3. If you don't see it, check:
+   - Your account may need approval (wait for email)
+   - Look for "Developers" in the main navigation
+
+### Step 3: Create API Key
+1. Click **"Create API Key"** or **"Generate New Key"**
+2. Give it a name (e.g., "WrenchMC Production")
+3. Copy the key immediately (you won't see it again!)
+4. Save it securely
+
+### Step 4: Add to Environment Variables
+Add to your `.env.local`:
+```env
+XAI_API_KEY="xai-your-actual-api-key-here"
+```
+
+### Step 5: Test the API
+1. Check your API quota/limits in the dashboard
+2. Note: Free tier may have rate limits
+3. The app will use this for all AI-powered queries
+
+**Troubleshooting:**
+- If you can't find the API section, xAI may still be in beta - check their documentation
+- API keys typically start with `xai-`
+- Make sure you're on the correct xAI platform (not X/Twitter)
+
+---
+
+## 3. YouTube Data API Setup (REQUIRED for Tutorials)
+
+### Step 1: Create Google Cloud Project
+1. Go to [Google Cloud Console](https://console.cloud.google.com)
+2. Sign in with your Google account
+3. Click the project dropdown (top left)
+4. Click **"New Project"**
+5. Enter project name: `WrenchMC` (or any name)
+6. Click **"Create"**
+7. Wait for project creation (10-30 seconds)
+
+### Step 2: Enable YouTube Data API
+1. In your new project, go to **"APIs & Services"** → **"Library"** (left sidebar)
+2. Search for **"YouTube Data API v3"**
+3. Click on it
+4. Click **"Enable"**
+5. Wait for it to enable (5-10 seconds)
+
+### Step 3: Create API Credentials
+1. Go to **"APIs & Services"** → **"Credentials"** (left sidebar)
+2. Click **"+ CREATE CREDENTIALS"** (top)
+3. Select **"API Key"**
+4. A popup will show your API key - **copy it immediately**
+5. Click **"Restrict Key"** (recommended for security)
+
+### Step 4: Restrict API Key (Recommended)
+1. Under **"API restrictions"**, select **"Restrict key"**
+2. Choose **"YouTube Data API v3"** from the list
+3. Click **"Save"**
+
+### Step 5: Set Up Billing (Required for Production)
+1. Go to **"Billing"** in left sidebar
+2. Click **"Link a billing account"**
+3. Add a payment method (Google gives $300 free credit for new accounts)
+4. Note: YouTube Data API has generous free tier (10,000 units/day)
+
+### Step 6: Add to Environment Variables
+Add to your `.env.local`:
+```env
+YOUTUBE_API_KEY="AIzaSyYourActualAPIKeyHere"
+```
+
+### Step 7: Test the API
+You can test in browser:
+```
+https://www.googleapis.com/youtube/v3/search?part=snippet&q=harley+davidson&key=YOUR_API_KEY
+```
+
+**Troubleshooting:**
+- API key format: Starts with `AIzaSy`
+- Quota: Default is 10,000 units/day (1 search = 100 units)
+- If you hit quota, wait 24 hours or request increase
+
+---
+
+## 4. Google OAuth Setup (Optional but Recommended)
+
+### Step 1: Create OAuth 2.0 Credentials
+1. In Google Cloud Console (same project as YouTube API)
+2. Go to **"APIs & Services"** → **"Credentials"**
+3. Click **"+ CREATE CREDENTIALS"**
+4. Select **"OAuth client ID"**
+5. If prompted, configure OAuth consent screen first (see Step 2)
+
+### Step 2: Configure OAuth Consent Screen
+1. Go to **"APIs & Services"** → **"OAuth consent screen"**
+2. Select **"External"** (unless you have Google Workspace)
+3. Click **"Create"**
+4. Fill in required fields:
+   - **App name**: `WrenchMC Goliath`
+   - **User support email**: Your email
+   - **Developer contact**: Your email
+5. Click **"Save and Continue"**
+6. Skip "Scopes" (click "Save and Continue")
+7. Add test users if needed (click "Save and Continue")
+8. Review and go back to credentials
+
+### Step 3: Create OAuth Client
+1. Back in **"Credentials"** → **"+ CREATE CREDENTIALS"** → **"OAuth client ID"**
+2. Application type: **"Web application"**
+3. Name: `WrenchMC Web Client`
+4. **Authorized JavaScript origins**:
+   - `http://localhost:3000` (for development)
+   - `https://yourdomain.vercel.app` (for production)
+5. **Authorized redirect URIs**:
+   - `http://localhost:3000/api/auth/callback/google` (development)
+   - `https://yourdomain.vercel.app/api/auth/callback/google` (production)
+6. Click **"Create"**
+7. Copy the **Client ID** and **Client Secret**
+
+### Step 4: Add to Environment Variables
+Add to your `.env.local`:
+```env
+GOOGLE_CLIENT_ID="your-client-id.apps.googleusercontent.com"
+GOOGLE_CLIENT_SECRET="your-client-secret"
+```
+
+**Troubleshooting:**
+- Client ID format: Ends with `.apps.googleusercontent.com`
+- Redirect URIs must match exactly (including http/https)
+- For production, add your Vercel domain after deployment
+
+---
+
+## 5. NextAuth Secret Setup
+
+### Step 1: Generate Secret
+Run this command in your terminal:
+```bash
+openssl rand -base64 32
+```
+
+### Step 2: Copy the Output
+You'll get something like: `aBc123XyZ456...` (32+ characters)
+
+### Step 3: Add to Environment Variables
+Add to your `.env.local`:
+```env
+NEXTAUTH_SECRET="paste-your-generated-secret-here"
+NEXTAUTH_URL="http://localhost:3000"
+```
+
+**For Production:**
+- Update `NEXTAUTH_URL` to your Vercel domain: `https://yourdomain.vercel.app`
+- Use the same secret (or generate a new one for production)
+
+---
+
+## 6. Pinecone Setup (Optional - for Vector Storage/RAG)
+
+### Step 1: Sign Up
+1. Go to [pinecone.io](https://www.pinecone.io)
+2. Click **"Get Started"** or **"Sign Up"**
+3. Sign up with email or Google
+4. Verify your email
+
+### Step 2: Create Index
+1. Once logged in, you'll see the dashboard
+2. Click **"Create Index"**
+3. Configure:
+   - **Index name**: `wrenchmc` (lowercase, no spaces)
+   - **Dimensions**: `384` (for sentence-transformers/all-MiniLM-L6-v2)
+   - **Metric**: `cosine`
+   - **Pod type**: `s1.x1` (free tier) or `p1.x1` (paid)
+4. Click **"Create Index"**
+5. Wait for index creation (1-2 minutes)
+
+### Step 3: Get API Key
+1. Go to **"API Keys"** in left sidebar
+2. Click **"Create API Key"**
+3. Give it a name: `WrenchMC Production`
+4. Copy the key (starts with `pc-`)
+
+### Step 4: Get Environment
+1. In your index details, note the **"Environment"** (e.g., `us-east-1-aws`)
+2. Also note the **"Index Name"** (e.g., `wrenchmc`)
+
+### Step 5: Add to Environment Variables
+Add to your `.env.local`:
+```env
+PINECONE_API_KEY="pc-your-actual-api-key"
+PINECONE_INDEX_NAME="wrenchmc"
+PINECONE_ENVIRONMENT="us-east-1-aws"  # Your actual environment
+```
+
+**Troubleshooting:**
+- Free tier: Limited to 1 index, 100K vectors
+- Dimensions must match your embedding model (384 for MiniLM)
+- Index name is case-sensitive
+
+---
+
+## 7. Hugging Face Setup (Optional - for Free Embeddings)
+
+### Step 1: Create Account
+1. Go to [huggingface.co](https://huggingface.co)
+2. Click **"Sign Up"**
+3. Sign up with email or GitHub
+4. Verify your email
+
+### Step 2: Create Access Token
+1. Click your profile icon (top right)
+2. Go to **"Settings"** → **"Access Tokens"**
+3. Click **"New token"**
+4. Name: `WrenchMC`
+5. Type: **"Read"** (sufficient for inference)
+6. Click **"Generate token"**
+7. Copy the token (starts with `hf_`)
+
+### Step 3: Add to Environment Variables
+Add to your `.env.local`:
+```env
+HUGGINGFACE_API_KEY="hf_your-actual-token-here"
+```
+
+**Note:** Hugging Face is free but has rate limits. The app will fall back to OpenAI if needed.
+
+---
+
+## 8. OpenAI Setup (Optional - Fallback for Embeddings)
+
+### Step 1: Create Account
+1. Go to [platform.openai.com](https://platform.openai.com)
+2. Click **"Sign Up"**
+3. Sign up with email or Google
+4. Verify your email and phone
+
+### Step 2: Add Payment Method
+1. Go to **"Settings"** → **"Billing"**
+2. Add a payment method (required for API access)
+3. Set usage limits if desired
+
+### Step 3: Create API Key
+1. Go to **"API Keys"** in left sidebar
+2. Click **"+ Create new secret key"**
+3. Name: `WrenchMC Production`
+4. Copy the key (starts with `sk-`)
+5. **Save it immediately** (you won't see it again)
+
+### Step 4: Add to Environment Variables
+Add to your `.env.local`:
+```env
+OPENAI_API_KEY="sk-your-actual-api-key-here"
+```
+
+**Note:** OpenAI charges per token. Used as fallback if Hugging Face fails.
+
+---
+
+## 9. Complete .env.local File
+
+Your final `.env.local` should look like this:
 
 ```env
-# Database (Vercel Postgres)
-POSTGRES_PRISMA_URL="postgresql://user:password@host:5432/db?pgbouncer=true"
-POSTGRES_URL_NON_POOLING="postgresql://user:password@host:5432/db"
+# Database (Vercel Postgres) - REQUIRED
+POSTGRES_PRISMA_URL="postgresql://user:pass@host:5432/db?pgbouncer=true"
+POSTGRES_URL_NON_POOLING="postgresql://user:pass@host:5432/db"
 
-# NextAuth
-NEXTAUTH_SECRET="generate-with-openssl-rand-base64-32"
+# NextAuth - REQUIRED
+NEXTAUTH_SECRET="your-generated-secret-here"
 NEXTAUTH_URL="http://localhost:3000"
 
-# Google OAuth (optional but recommended)
-GOOGLE_CLIENT_ID="your-client-id"
+# Google OAuth - OPTIONAL (but recommended)
+GOOGLE_CLIENT_ID="your-client-id.apps.googleusercontent.com"
 GOOGLE_CLIENT_SECRET="your-client-secret"
 
-# xAI Grok API (REQUIRED for AI queries)
-XAI_API_KEY="your-xai-api-key"
+# xAI Grok API - REQUIRED for AI queries
+XAI_API_KEY="xai-your-api-key"
 
-# YouTube Data API (REQUIRED for tutorials)
-YOUTUBE_API_KEY="your-youtube-api-key"
+# YouTube Data API - REQUIRED for tutorials
+YOUTUBE_API_KEY="AIzaSyYourAPIKey"
 
-# Optional: Vector Storage (for RAG)
-PINECONE_API_KEY="your-pinecone-key"
+# Pinecone - OPTIONAL (for better RAG performance)
+PINECONE_API_KEY="pc-your-api-key"
 PINECONE_INDEX_NAME="wrenchmc"
-PINECONE_ENVIRONMENT="us-east-1"
+PINECONE_ENVIRONMENT="us-east-1-aws"
 
-# Optional: Embeddings (Hugging Face or OpenAI)
-HUGGINGFACE_API_KEY="your-hf-key"
-OPENAI_API_KEY="your-openai-key"  # Fallback if HF fails
+# Hugging Face - OPTIONAL (free embeddings)
+HUGGINGFACE_API_KEY="hf_your-token"
+
+# OpenAI - OPTIONAL (fallback embeddings)
+OPENAI_API_KEY="sk-your-api-key"
 ```
 
-### 2. Set Up Vercel Postgres
+---
 
-1. Go to [Vercel Dashboard](https://vercel.com/dashboard)
-2. Create a new Postgres database
-3. Copy the connection strings to `.env.local`
+## 10. Final Setup Steps
 
-### 3. Initialize Database
-
+### Step 1: Install Dependencies
 ```bash
-# Generate Prisma Client
-npm run db:generate
-
-# Run migrations
-npm run db:migrate
-
-# (Optional) Open Prisma Studio to view data
-npm run db:studio
+npm install
 ```
 
-### 4. Get API Keys
+### Step 2: Generate Prisma Client
+```bash
+npm run db:generate
+```
 
-#### xAI Grok API
-1. Sign up at [x.ai](https://x.ai)
-2. Get your API key from the dashboard
-3. Add to `.env.local` as `XAI_API_KEY`
+### Step 3: Run Database Migrations
+```bash
+npm run db:migrate
+```
 
-#### YouTube Data API
-1. Go to [Google Cloud Console](https://console.cloud.google.com)
-2. Create a new project
-3. Enable YouTube Data API v3
-4. Create credentials (API Key)
-5. Add to `.env.local` as `YOUTUBE_API_KEY`
-
-#### Google OAuth (Optional)
-1. In Google Cloud Console, create OAuth 2.0 credentials
-2. Add authorized redirect URI: `http://localhost:3000/api/auth/callback/google`
-3. Add to `.env.local`
-
-### 5. Run Development Server
-
+### Step 4: Start Development Server
 ```bash
 npm run dev
 ```
 
-Visit `http://localhost:3000` 🎉
-
-## 📝 Migration from Supabase
-
-If you're migrating from the old Supabase setup:
-
-1. **Export existing data** from Supabase:
-   ```sql
-   -- Export specs
-   COPY (SELECT * FROM specs) TO '/tmp/specs.csv' CSV HEADER;
-   ```
-
-2. **Import to Vercel Postgres** using Prisma:
-   ```bash
-   # Use Prisma Studio or write a migration script
-   npm run db:studio
-   ```
-
-3. **Update authentication**: Users will need to sign up again (or migrate user data)
-
-## 🔧 Troubleshooting
-
-### Database Connection Issues
-- Verify `POSTGRES_PRISMA_URL` uses `?pgbouncer=true`
-- Verify `POSTGRES_URL_NON_POOLING` is the direct connection
-- Check Vercel dashboard for correct connection strings
-
-### AI Queries Not Working
-- Verify `XAI_API_KEY` is set correctly
-- Check API quota/limits
-- Review error logs in browser console
-
-### YouTube Videos Not Loading
-- Verify `YOUTUBE_API_KEY` is valid
-- Check API quota (default: 10,000 units/day)
-- Ensure YouTube Data API v3 is enabled
-
-### Authentication Issues
-- Generate new `NEXTAUTH_SECRET`: `openssl rand -base64 32`
-- Verify `NEXTAUTH_URL` matches your domain
-- Check OAuth redirect URIs match exactly
-
-## 🎯 Next Steps
-
-1. **Seed Database**: Run PDF parsing script or manually add specs
-2. **Configure Vector Storage**: Set up Pinecone for better RAG performance
-3. **Customize Branding**: Update colors, logos, and content
-4. **Add More Data Sources**: Update `scripts/parse-pdfs.ts` with real PDF URLs
-5. **Deploy to Vercel**: Push to GitHub and deploy!
-
-## 📚 Additional Resources
-
-- [Prisma Docs](https://www.prisma.io/docs)
-- [NextAuth.js Docs](https://next-auth.js.org)
-- [xAI Grok API](https://docs.x.ai)
-- [YouTube Data API](https://developers.google.com/youtube/v3)
-- [Vercel Postgres](https://vercel.com/docs/storage/vercel-postgres)
+### Step 5: Verify Everything Works
+1. Open `http://localhost:3000`
+2. Try signing up/in
+3. Try an AI query: "Torque specs for transmission cover on 2005 Road King"
+4. Check tutorials page loads videos
+5. Check database browser shows empty (no specs yet)
 
 ---
 
-**Need help?** Open an issue on GitHub or check the main README.md
+## 🚨 Troubleshooting Common Issues
 
+### Database Connection Fails
+- **Problem**: `Can't reach database server`
+- **Solution**: 
+  - Verify connection strings are correct
+  - Check `POSTGRES_PRISMA_URL` has `?pgbouncer=true`
+  - Ensure database is created in Vercel
+
+### AI Queries Return Errors
+- **Problem**: `XAI_API_KEY not configured` or `401 Unauthorized`
+- **Solution**:
+  - Verify `XAI_API_KEY` is in `.env.local`
+  - Check API key is correct (starts with `xai-`)
+  - Verify API quota hasn't been exceeded
+
+### YouTube Videos Don't Load
+- **Problem**: `YouTube API error` or no videos show
+- **Solution**:
+  - Verify `YOUTUBE_API_KEY` is correct
+  - Check API quota in Google Cloud Console
+  - Ensure YouTube Data API v3 is enabled
+
+### Authentication Doesn't Work
+- **Problem**: Can't sign in or OAuth fails
+- **Solution**:
+  - Verify `NEXTAUTH_SECRET` is set
+  - Check `NEXTAUTH_URL` matches your domain
+  - For OAuth: Verify redirect URIs match exactly
+  - Check browser console for errors
+
+### Prisma Migrations Fail
+- **Problem**: `Migration failed` or `Can't connect`
+- **Solution**:
+  - Use `POSTGRES_URL_NON_POOLING` for migrations (not pooled URL)
+  - Ensure database exists in Vercel
+  - Try: `npx prisma migrate reset` (WARNING: deletes all data)
+
+---
+
+## 📚 Next Steps After Setup
+
+1. **Seed Database**: Add some test specs manually or run PDF parser
+2. **Deploy to Vercel**: Push to GitHub and deploy
+3. **Update Production URLs**: Add production domain to OAuth redirect URIs
+4. **Monitor Usage**: Check API quotas and database usage
+5. **Add More Data**: Use PDF parser or manual entry to populate specs
+
+---
+
+## 🆘 Need Help?
+
+- Check the main [README.md](./README.md) for more details
+- Review error messages in browser console and terminal
+- Check Vercel logs for deployment issues
+- Open an issue on GitHub with error details
+
+---
+
+**You're all set! 🎉** Your WrenchMC Goliath is ready to help Harley mechanics find specs faster than ever!
