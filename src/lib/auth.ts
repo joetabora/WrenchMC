@@ -6,7 +6,7 @@ import CredentialsProvider from 'next-auth/providers/credentials'
 import { prisma } from './prisma'
 import bcrypt from 'bcryptjs'
 
-export const authOptions: NextAuthConfig = {
+const config: NextAuthConfig = {
   adapter: PrismaAdapter(prisma) as any,
   providers: [
     GoogleProvider({
@@ -59,15 +59,15 @@ export const authOptions: NextAuthConfig = {
   },
   callbacks: {
     async session({ session, user }) {
-      if (session.user) {
+      if (session.user && user) {
         session.user.id = user.id
         const dbUser = await prisma.user.findUnique({
           where: { id: user.id },
           include: { profile: true },
         })
         if (dbUser) {
-          session.user.role = dbUser.role
-          session.user.verified = dbUser.verified
+          (session.user as any).role = dbUser.role
+          (session.user as any).verified = dbUser.verified
         }
       }
       return session
@@ -79,6 +79,6 @@ export const authOptions: NextAuthConfig = {
   secret: process.env.NEXTAUTH_SECRET,
 }
 
-// Export auth function for NextAuth v5
-export const { handlers, auth, signIn, signOut } = NextAuth(authOptions as any)
+// Export auth function and handlers for NextAuth v5
+export const { handlers, auth, signIn, signOut } = NextAuth(config)
 
