@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
     const context = [
       ...similarContent.map((c) => c.text),
       ...dbSpecs.map(
-        (s) =>
+        (s: any) =>
           `${s.componentName}: Torque ${s.torqueSpecLow || ''}-${s.torqueSpecHigh || ''} Nm, Bolt: ${s.boltSize || 'N/A'}. ${s.sequenceNotes || ''}`
       ),
     ]
