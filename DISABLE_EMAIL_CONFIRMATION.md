@@ -101,3 +101,4 @@ If you want email verification to work properly, you need to configure SMTP:
 **For now**: Disable email confirmation (quickest solution)
 **For production**: Set up Resend or SendGrid SMTP, then re-enable
 
+

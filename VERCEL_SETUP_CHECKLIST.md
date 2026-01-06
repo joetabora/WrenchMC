@@ -174,3 +174,4 @@ If you've checked everything above and it's still not working:
 4. Verify Supabase project is active (not paused)
 5. Make sure you're using the correct Supabase project credentials
 
+

@@ -1,54 +1,40 @@
 "use client"
 import React from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '@/components/AuthProvider'
-import IconButton from '@/components/ui/IconButton'
-import DarkModeToggle from '@/components/ui/DarkModeToggle'
+import { useSession, signOut } from 'next-auth/react'
 import Button from '@/components/ui/Button'
-import { Mic, User, LogOut } from 'lucide-react'
+import { LogIn, LogOut, User } from 'lucide-react'
+import Link from 'next/link'
 
 export default function HeaderActions() {
   const router = useRouter()
-  const { user, signOut } = useAuth()
-  
+  const { data: session } = useSession()
+
   return (
     <div className="flex items-center gap-2">
-      <IconButton icon={Mic} label="Voice" onClick={() => router.push('/voice')} />
-      {user ? (
+      {session?.user ? (
         <>
+          <Link href="/profile" passHref>
+            <Button variant="ghost" size="sm" className="hidden md:flex">
+              <User className="w-4 h-4 mr-2" />
+              {session.user.name || session.user.email}
+            </Button>
+          </Link>
           <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => router.push('/profile')}
-            className="hidden sm:flex"
-          >
-            <User className="w-4 h-4 mr-2" />
-            Profile
-          </Button>
-          <Button
+            onClick={() => signOut({ callbackUrl: '/' })}
             variant="outline"
             size="sm"
-            onClick={async () => {
-              await signOut()
-              router.push('/')
-            }}
           >
             <LogOut className="w-4 h-4 mr-2" />
-            <span className="hidden sm:inline">Sign Out</span>
-            <span className="sm:hidden">Out</span>
+            Sign Out
           </Button>
         </>
       ) : (
-        <Button
-          size="sm"
-          onClick={() => router.push('/auth/login')}
-        >
-          <User className="w-4 h-4 mr-2" />
-          <span className="hidden sm:inline">Sign In</span>
-          <span className="sm:hidden">Login</span>
+        <Button onClick={() => router.push('/auth/login')} variant="primary" size="sm">
+          <LogIn className="w-4 h-4 mr-2" />
+          Sign In
         </Button>
       )}
-      <DarkModeToggle />
     </div>
   )
 }
