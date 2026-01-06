@@ -116,6 +116,8 @@ model Spec {
   applicableModels String[] @default([])
   submittedBy     String
   user            User     @relation(fields: [submittedBy], references: [id])
+  modelId         String?
+  model           HarleyModel? @relation(fields: [modelId], references: [id], onDelete: SetNull)
   approved        Boolean  @default(false)
   sourceNotes     String?  @db.Text
   sourceUrl       String?
@@ -128,6 +130,7 @@ model Spec {
   @@index([componentName])
   @@index([approved])
   @@index([submittedBy])
+  @@index([modelId])
   // Fulltext search can be implemented at application level or with PostgreSQL extensions
 }
 
