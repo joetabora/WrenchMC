@@ -119,7 +119,11 @@ export default function DatabasePage() {
           {loading ? (
             <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
               {[...Array(6)].map((_, i) => (
-                <Card key={i} className="animate-pulse h-48" />
+                <Card key={i} className="animate-pulse h-48">
+                  <div className="h-6 bg-wrench-light rounded w-3/4 mb-4"></div>
+                  <div className="h-4 bg-wrench-light rounded w-1/2 mb-2"></div>
+                  <div className="h-4 bg-wrench-light rounded w-2/3"></div>
+                </Card>
               ))}
             </div>
           ) : specs.length === 0 ? (

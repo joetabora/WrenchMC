@@ -3,7 +3,7 @@ import React from 'react'
 import { motion } from 'framer-motion'
 
 interface CardProps {
-  children: React.ReactNode
+  children?: React.ReactNode
   className?: string
   hover?: boolean
   delay?: number
