@@ -28,11 +28,12 @@ Go to your Vercel project dashboard and add these environment variables:
    - `YOUTUBE_API_KEY` - YouTube Data API v3 key ✅ (You have this - add to Vercel)
 
 6. **Vector Database** (for RAG):
-   - `PINECONE_API_KEY` - Pinecone API key
-   - `PINECONE_INDEX_NAME` - Your Pinecone index name
-   - `PINECONE_ENVIRONMENT` - Your Pinecone environment (e.g., `us-east-1`)
-   - OR use Hugging Face:
-   - `HUGGINGFACE_API_KEY` - Hugging Face API key
+   - `PINECONE_API_KEY` - Pinecone API key ✅ (You have this - add to Vercel)
+   - `PINECONE_INDEX_NAME` - Your Pinecone index name ✅ (`wrenchmc`)
+   - `PINECONE_ENVIRONMENT` - Your Pinecone environment ✅ (`us-east-1`)
+   - **Embedding Provider** (choose one):
+   - `HUGGINGFACE_API_KEY` - Hugging Face API key (free, 384 dims)
+   - OR `OPENAI_API_KEY` - OpenAI API key (paid, 1536 dims)
 
 ### How to Add in Vercel:
 1. Go to your project → **Settings** → **Environment Variables**
