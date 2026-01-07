@@ -76,8 +76,28 @@ export async function POST(req: NextRequest) {
     })
   } catch (error: any) {
     console.error('Query API error:', error)
+    console.error('Error details:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name,
+    })
+    
+    // Provide more helpful error messages
+    let errorMessage = error.message || 'Failed to process query'
+    
+    if (errorMessage.includes('GROQ_API_KEY') || errorMessage.includes('GEMINI_API_KEY')) {
+      errorMessage = 'AI API keys not configured. Please add GROQ_API_KEY or GEMINI_API_KEY to your environment variables.'
+    } else if (errorMessage.includes('Prisma') || errorMessage.includes('database')) {
+      errorMessage = 'Database connection error. Please check your database configuration.'
+    } else if (errorMessage.includes('API error')) {
+      errorMessage = `AI service error: ${errorMessage}. Please check your API keys and quota.`
+    }
+    
     return NextResponse.json(
-      { error: error.message || 'Failed to process query' },
+      { 
+        error: errorMessage,
+        details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      },
       { status: 500 }
     )
   }

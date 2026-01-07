@@ -50,10 +50,17 @@ function QueryPageContent() {
       })
 
       if (!res.ok) {
-        throw new Error('Failed to process query')
+        const errorData = await res.json().catch(() => ({}))
+        throw new Error(errorData.error || `Server error: ${res.status} ${res.statusText}`)
       }
 
       const data: QueryResponse = await res.json()
+      
+      // Check if response has an error
+      if (data.error) {
+        throw new Error(data.error)
+      }
+      
       setResponse(data)
     } catch (err: any) {
       setError(err.message || 'An error occurred')
