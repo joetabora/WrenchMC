@@ -3,11 +3,12 @@ import React, { useState, useEffect, Suspense } from 'react'
 
 export const dynamic = 'force-dynamic'
 import { useSearchParams } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Button from '@/components/ui/Button'
 import Card from '@/components/ui/Card'
 import Input from '@/components/ui/Input'
-import { Search, Loader2, Sparkles, Youtube, Database, ExternalLink, Mic } from 'lucide-react'
+import { Search, Loader2, Sparkles, Youtube, Database, ExternalLink, Mic, Save, CheckCircle, AlertCircle } from 'lucide-react'
 import SpecCard from '@/components/SpecCard'
 import YouTube from 'react-youtube'
 
@@ -23,12 +24,15 @@ interface QueryResponse {
 
 function QueryPageContent() {
   const searchParams = useSearchParams()
+  const { data: session } = useSession()
   const initialQuery = searchParams.get('q') || ''
   
   const [query, setQuery] = useState(initialQuery)
   const [loading, setLoading] = useState(false)
+  const [saving, setSaving] = useState(false)
   const [response, setResponse] = useState<QueryResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [saveMessage, setSaveMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
   useEffect(() => {
     if (initialQuery) {
@@ -68,6 +72,44 @@ function QueryPageContent() {
       setError(err.message || 'An error occurred')
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function handleSaveAsSpec() {
+    if (!session?.user) {
+      setSaveMessage({ type: 'error', text: 'Please sign in to save specs' })
+      return
+    }
+
+    if (!response) {
+      setSaveMessage({ type: 'error', text: 'No answer to save' })
+      return
+    }
+
+    setSaving(true)
+    setSaveMessage(null)
+
+    try {
+      const res = await fetch('/api/query/save-spec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          query,
+          answer: response.answer,
+        }),
+      })
+
+      const data = await res.json()
+
+      if (res.ok && data.success) {
+        setSaveMessage({ type: 'success', text: data.message || 'Spec saved! It will be reviewed before being published.' })
+      } else {
+        setSaveMessage({ type: 'error', text: data.error || 'Failed to save spec' })
+      }
+    } catch (err: any) {
+      setSaveMessage({ type: 'error', text: err.message || 'Error saving spec' })
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -153,10 +195,41 @@ function QueryPageContent() {
             >
               {/* AI Answer */}
               <Card>
-                <div className="flex items-center gap-3 mb-4">
-                  <Sparkles className="w-6 h-6 text-wrench-accent" />
-                  <h2 className="text-2xl font-bold text-wrench-chrome">AI Answer</h2>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <Sparkles className="w-6 h-6 text-wrench-accent" />
+                    <h2 className="text-2xl font-bold text-wrench-chrome">AI Answer</h2>
+                  </div>
+                  {session?.user && (
+                    <Button
+                      onClick={handleSaveAsSpec}
+                      isLoading={saving}
+                      variant="outline"
+                      size="sm"
+                    >
+                      <Save className="w-4 h-4 mr-2" />
+                      Save as Spec
+                    </Button>
+                  )}
                 </div>
+                {saveMessage && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className={`flex items-center gap-2 p-3 rounded-lg mb-4 ${
+                      saveMessage.type === 'success'
+                        ? 'bg-green-500/20 border border-green-500/30 text-green-400'
+                        : 'bg-red-500/20 border border-red-500/30 text-red-400'
+                    }`}
+                  >
+                    {saveMessage.type === 'success' ? (
+                      <CheckCircle className="w-5 h-5 flex-shrink-0" />
+                    ) : (
+                      <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                    )}
+                    <span className="text-sm">{saveMessage.text}</span>
+                  </motion.div>
+                )}
                 <div className="prose prose-invert max-w-none">
                   <p className="text-wrench-chrome whitespace-pre-wrap leading-relaxed">
                     {response.answer}
