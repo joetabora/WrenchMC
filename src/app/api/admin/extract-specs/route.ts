@@ -8,47 +8,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Source text is required' }, { status: 400 })
     }
 
-    // Check for API keys - prefer OpenRouter (free options), fallback to OpenAI
-    const openRouterKey = process.env.OPENROUTER_API_KEY
+    // Check for API keys - prefer Groq (fast), then Gemini, fallback to OpenAI
+    const groqApiKey = process.env.GROQ_API_KEY
+    const geminiApiKey = process.env.GEMINI_API_KEY
     const openaiApiKey = process.env.OPENAI_API_KEY
     
-    if (!openRouterKey && !openaiApiKey) {
+    if (!groqApiKey && !geminiApiKey && !openaiApiKey) {
       return NextResponse.json({ 
-        error: 'No AI API key configured. Add OPENROUTER_API_KEY (recommended for free models) or OPENAI_API_KEY to your environment variables.' 
+        error: 'No AI API key configured. Add GROQ_API_KEY (recommended), GEMINI_API_KEY, or OPENAI_API_KEY to your environment variables.' 
       }, { status: 500 })
     }
 
-    // Use OpenRouter if available (has free models), otherwise OpenAI
-    const useOpenRouter = !!openRouterKey
-    const apiKey = openRouterKey || openaiApiKey
-    const apiUrl = useOpenRouter 
-      ? 'https://openrouter.ai/api/v1/chat/completions'
-      : 'https://api.openai.com/v1/chat/completions'
-    
-    // Choose model - OpenRouter free models or OpenAI
-    // OpenRouter free models: Check https://openrouter.ai/models for current free models
-    // Common free models: meta-llama/llama-3.2-3b-instruct:free, qwen/qwen-2.5-7b-instruct:free
-    const model = useOpenRouter
-      ? (process.env.OPENROUTER_MODEL || 'meta-llama/llama-3.2-3b-instruct:free') // Free model (verified to work)
-      : (process.env.OPENAI_MODEL || 'gpt-4o-mini')
-
-    // Call AI API to extract specs
-    const response = await fetch(apiUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
-        ...(useOpenRouter && {
-          'HTTP-Referer': process.env.NEXT_PUBLIC_SITE_URL || 'https://wrenchmc.vercel.app',
-          'X-Title': 'WrenchMC Spec Import'
-        })
-      },
-      body: JSON.stringify({
-        model: model,
-        messages: [
-          {
-            role: 'system',
-            content: `You are a technical data extraction assistant. Extract Harley-Davidson motorcycle technical specifications from the provided text.
+    // Prepare system prompt
+    const systemPrompt = `You are a technical data extraction assistant. Extract Harley-Davidson motorcycle technical specifications from the provided text.
 
 Extract all torque specifications, bolt sizes, and related technical information. Return a JSON object with a "specs" array containing objects with this exact structure:
 
@@ -77,26 +49,105 @@ Rules:
 - Try to infer applicable years/models from context if mentioned
 - Return empty specs array if no specs found
 - Return ONLY valid JSON, no other text`
+
+    let content: string
+
+    // Use Groq if available (fastest), then Gemini, fallback to OpenAI
+    if (groqApiKey) {
+      // Groq API (OpenAI-compatible)
+      const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${groqApiKey}`,
+        },
+        body: JSON.stringify({
+          model: process.env.GROQ_MODEL || 'llama-3.1-70b-versatile',
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: sourceText }
+          ],
+          temperature: 0.3,
+          response_format: { type: 'json_object' }
+        }),
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        return NextResponse.json({ 
+          error: `Groq API error: ${error.error?.message || error.message || 'Unknown error'}` 
+        }, { status: 500 })
+      }
+
+      const data = await response.json()
+      content = data.choices[0]?.message?.content || ''
+    } else if (geminiApiKey) {
+      // Google Gemini API
+      const model = process.env.GEMINI_MODEL || 'gemini-1.5-flash'
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiApiKey}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
           },
-          {
-            role: 'user',
-            content: sourceText
-          }
-        ],
-        temperature: 0.3, // Lower temperature for more consistent extraction
-        response_format: { type: 'json_object' }
-      }),
-    })
+          body: JSON.stringify({
+            contents: [
+              {
+                role: 'user',
+                parts: [
+                  { text: systemPrompt },
+                  { text: sourceText }
+                ]
+              }
+            ],
+            generationConfig: {
+              temperature: 0.3,
+              maxOutputTokens: 2000,
+              responseMimeType: 'application/json',
+            },
+          }),
+        }
+      )
 
-    if (!response.ok) {
-      const error = await response.json()
-      return NextResponse.json({ 
-        error: `AI API error: ${error.error?.message || error.message || 'Unknown error'}` 
-      }, { status: 500 })
+      if (!response.ok) {
+        const error = await response.text()
+        return NextResponse.json({ 
+          error: `Gemini API error: ${error}` 
+        }, { status: 500 })
+      }
+
+      const data = await response.json()
+      content = data.candidates?.[0]?.content?.parts?.[0]?.text || ''
+    } else {
+      // OpenAI API (fallback)
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${openaiApiKey}`,
+        },
+        body: JSON.stringify({
+          model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: sourceText }
+          ],
+          temperature: 0.3,
+          response_format: { type: 'json_object' }
+        }),
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        return NextResponse.json({ 
+          error: `OpenAI API error: ${error.error?.message || error.message || 'Unknown error'}` 
+        }, { status: 500 })
+      }
+
+      const data = await response.json()
+      content = data.choices[0]?.message?.content || ''
     }
-
-    const data = await response.json()
-    const content = data.choices[0]?.message?.content
 
     if (!content) {
       return NextResponse.json({ error: 'No response from AI' }, { status: 500 })
@@ -106,7 +157,7 @@ Rules:
     let parsed
     try {
       parsed = JSON.parse(content)
-      // Handle if OpenAI wraps it in an object
+      // Handle if AI wraps it in an object
       const specs = parsed.specs || parsed.data || (Array.isArray(parsed) ? parsed : [])
       
       if (!Array.isArray(specs)) {
@@ -141,4 +192,3 @@ Rules:
     return NextResponse.json({ error: err.message || 'Error extracting specs' }, { status: 500 })
   }
 }
-

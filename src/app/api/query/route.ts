@@ -1,7 +1,7 @@
-// AI-powered query endpoint using Grok with RAG
+// AI-powered query endpoint using Groq AI / Gemini with RAG
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
-import { queryGrokWithRAG, queryGrok } from '@/lib/grok'
+import { queryAIWithRAG } from '@/lib/ai'
 import { searchSimilarContent } from '@/lib/embeddings'
 import { prisma } from '@/lib/prisma'
 import { searchYouTubeVideos } from '@/lib/youtube'
@@ -44,8 +44,8 @@ export async function POST(req: NextRequest) {
       ),
     ]
 
-    // Query Grok with RAG context
-    const { answer, sources } = await queryGrokWithRAG(query, context)
+    // Query AI (Groq/Gemini) with RAG context
+    const { answer, sources } = await queryAIWithRAG(query, context)
 
     // Search YouTube for related tutorials
     const youtubeVideos = await searchYouTubeVideos(`Harley Davidson ${query}`, 3)
