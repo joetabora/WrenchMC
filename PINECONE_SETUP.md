@@ -39,6 +39,8 @@ This guide will help you set up Pinecone for vector embeddings and RAG (Retrieva
      - Use `1536` if using OpenAI embeddings
    - **Metric**: `cosine` (recommended for text similarity)
    - **Cloud Provider**: Choose AWS, GCP, or Azure (closest to your users)
+     - **AWS is fine!** This is just where Pinecone stores your data
+     - This is NOT related to embedding providers (Hugging Face/OpenAI)
    - **Region**: Choose closest to your Vercel deployment (e.g., `us-east-1`)
 
 3. **Create the Index**

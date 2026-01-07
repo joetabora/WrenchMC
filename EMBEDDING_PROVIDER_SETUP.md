@@ -4,6 +4,8 @@
 
 **Short answer: No, but you need SOME embedding provider.**
 
+**Note:** If you selected AWS/GCP/Azure as your Pinecone cloud provider, that's just where Pinecone stores your data - it's unrelated to embedding providers. See `PINECONE_CLOUD_PROVIDER.md` for details.
+
 ## 📊 How It Works
 
 ```
