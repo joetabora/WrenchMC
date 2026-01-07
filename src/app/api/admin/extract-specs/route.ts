@@ -62,7 +62,7 @@ Rules:
           'Authorization': `Bearer ${groqApiKey}`,
         },
         body: JSON.stringify({
-          model: process.env.GROQ_MODEL || 'llama-3.1-70b-versatile',
+          model: process.env.GROQ_MODEL || 'llama-3.3-70b-versatile',
           messages: [
             { role: 'system', content: systemPrompt },
             { role: 'user', content: sourceText }
@@ -85,7 +85,7 @@ Rules:
       // Google Gemini API
       const model = process.env.GEMINI_MODEL || 'gemini-1.5-flash'
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiApiKey}`,
+        `https://generativelanguage.googleapis.com/v1/models/${model}:generateContent?key=${geminiApiKey}`,
         {
           method: 'POST',
           headers: {

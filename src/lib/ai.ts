@@ -32,7 +32,7 @@ export async function queryGroq(
       Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
-      model: process.env.GROQ_MODEL || 'llama-3.1-70b-versatile', // Fast and capable
+      model: process.env.GROQ_MODEL || 'llama-3.3-70b-versatile', // Updated to current model
       messages: allMessages,
       temperature: 0.7,
       max_tokens: 2000,
@@ -70,7 +70,7 @@ export async function queryGemini(
     : contents
 
   const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${process.env.GEMINI_MODEL || 'gemini-1.5-flash'}:generateContent?key=${apiKey}`,
+    `https://generativelanguage.googleapis.com/v1/models/${process.env.GEMINI_MODEL || 'gemini-1.5-flash'}:generateContent?key=${apiKey}`,
     {
       method: 'POST',
       headers: {
