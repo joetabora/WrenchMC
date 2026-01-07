@@ -17,6 +17,8 @@ interface QueryResponse {
   specs: any[]
   youtubeVideos: any[]
   similarContent: Array<{ text: string; sourceType: string; score: number }>
+  error?: string
+  details?: string
 }
 
 function QueryPageContent() {
