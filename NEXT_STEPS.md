@@ -25,7 +25,7 @@ Go to your Vercel project dashboard and add these environment variables:
    - `OPENAI_API_KEY` - OpenAI API key (fallback for embeddings/AI)
 
 5. **YouTube Integration**:
-   - `YOUTUBE_API_KEY` - YouTube Data API v3 key
+   - `YOUTUBE_API_KEY` - YouTube Data API v3 key ✅ (You have this - add to Vercel)
 
 6. **Vector Database** (for RAG):
    - `PINECONE_API_KEY` - Pinecone API key
