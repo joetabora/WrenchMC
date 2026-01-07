@@ -9,6 +9,7 @@
     "lint": "next lint",
     "postinstall": "prisma generate",
     "parse-pdfs": "ts-node scripts/parse-pdfs.ts",
+    "populate-pinecone": "ts-node scripts/populate-pinecone.ts",
     "db:migrate": "prisma migrate dev",
     "db:generate": "prisma generate",
     "db:studio": "prisma studio",

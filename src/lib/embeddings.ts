@@ -91,9 +91,34 @@ export async function storeEmbedding(
       return null
     }
 
-    // Store in Pinecone
+    // Use Pinecone SDK if available, otherwise fallback to REST API
+    try {
+      const { getPineconeIndex } = await import('./pinecone')
+      const index = await getPineconeIndex()
+      
+      if (index) {
+        await index.upsert([
+          {
+            id: `${sourceType}_${sourceId}`,
+            values: embedding,
+            metadata: {
+              text,
+              sourceType,
+              sourceId,
+              ...metadata,
+            },
+          },
+        ])
+        return `${sourceType}_${sourceId}`
+      }
+    } catch (sdkError) {
+      console.warn('Pinecone SDK failed, using REST API fallback:', sdkError)
+    }
+
+    // Fallback to REST API (for older Pinecone setups)
+    const environment = process.env.PINECONE_ENVIRONMENT || 'us-east-1'
     const response = await fetch(
-      `https://${pineconeIndex}.svc.${process.env.PINECONE_ENVIRONMENT || 'us-east-1'}.pinecone.io/vectors/upsert`,
+      `https://${pineconeIndex}.svc.${environment}.pinecone.io/vectors/upsert`,
       {
         method: 'POST',
         headers: {
@@ -118,7 +143,8 @@ export async function storeEmbedding(
     )
 
     if (!response.ok) {
-      throw new Error(`Pinecone error: ${response.statusText}`)
+      const errorText = await response.text()
+      throw new Error(`Pinecone error: ${response.statusText} - ${errorText}`)
     }
 
     return `${sourceType}_${sourceId}`
@@ -149,8 +175,35 @@ export async function searchSimilarContent(
       return []
     }
 
+    // Use Pinecone SDK if available, otherwise fallback to REST API
+    try {
+      const { getPineconeIndex } = await import('./pinecone')
+      const index = await getPineconeIndex()
+      
+      if (index) {
+        const queryResponse = await index.query({
+          vector: queryEmbedding,
+          topK,
+          includeMetadata: true,
+        })
+
+        return (
+          queryResponse.matches?.map((match: any) => ({
+            text: match.metadata?.text || '',
+            sourceType: match.metadata?.sourceType || '',
+            sourceId: match.metadata?.sourceId || '',
+            score: match.score || 0,
+          })) || []
+        )
+      }
+    } catch (sdkError) {
+      console.warn('Pinecone SDK failed, using REST API fallback:', sdkError)
+    }
+
+    // Fallback to REST API (for older Pinecone setups)
+    const environment = process.env.PINECONE_ENVIRONMENT || 'us-east-1'
     const response = await fetch(
-      `https://${pineconeIndex}.svc.${process.env.PINECONE_ENVIRONMENT || 'us-east-1'}.pinecone.io/query`,
+      `https://${pineconeIndex}.svc.${environment}.pinecone.io/query`,
       {
         method: 'POST',
         headers: {
@@ -166,7 +219,8 @@ export async function searchSimilarContent(
     )
 
     if (!response.ok) {
-      throw new Error(`Pinecone query error: ${response.statusText}`)
+      const errorText = await response.text()
+      throw new Error(`Pinecone query error: ${response.statusText} - ${errorText}`)
     }
 
     const data = await response.json()
