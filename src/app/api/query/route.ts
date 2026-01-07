@@ -8,12 +8,22 @@ import { searchYouTubeVideos } from '@/lib/youtube'
 
 export async function POST(req: NextRequest) {
   try {
+    // Log environment check (without exposing keys)
+    console.log('Query API - Environment check:', {
+      hasGroq: !!process.env.GROQ_API_KEY,
+      hasGemini: !!process.env.GEMINI_API_KEY,
+      hasPinecone: !!process.env.PINECONE_API_KEY,
+      hasYouTube: !!process.env.YOUTUBE_API_KEY,
+    })
+
     const session = await auth()
     const { query } = await req.json()
 
     if (!query || typeof query !== 'string') {
       return NextResponse.json({ error: 'Query is required' }, { status: 400 })
     }
+
+    console.log('Processing query:', query.substring(0, 50))
 
     // Search for similar content in vector database
     const similarContent = await searchSimilarContent(query, 5)
