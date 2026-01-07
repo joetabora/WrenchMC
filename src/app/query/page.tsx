@@ -113,9 +113,9 @@ function QueryPageContent() {
     }
   }
 
-  return (
-    <div className="min-h-screen py-12 px-6">
-      <div className="max-w-6xl mx-auto">
+        return (
+          <div className="min-h-screen py-6 sm:py-12 px-4 sm:px-6">
+            <div className="max-w-6xl mx-auto">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -134,26 +134,26 @@ function QueryPageContent() {
         </motion.div>
 
         {/* Search Form */}
-        <Card className="mb-8">
-          <form
-            onSubmit={(e) => {
-              e.preventDefault()
-              handleQuery()
-            }}
-            className="flex gap-3"
-          >
-            <Input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Example: 'Torque specs for transmission cover on 2005 Road King'"
-              className="flex-1"
-            />
-            <Button type="submit" isLoading={loading} size="lg">
-              <Search className="w-5 h-5 mr-2" />
-              Query
-            </Button>
-          </form>
-        </Card>
+              <Card className="mb-6 sm:mb-8">
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault()
+                    handleQuery()
+                  }}
+                  className="flex flex-col sm:flex-row gap-3"
+                >
+                  <Input
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    placeholder="Example: 'Torque specs for transmission cover on 2005 Road King'"
+                    className="flex-1 text-sm sm:text-base"
+                  />
+                  <Button type="submit" isLoading={loading} size="lg" className="w-full sm:w-auto">
+                    <Search className="w-5 h-5 mr-2" />
+                    Query
+                  </Button>
+                </form>
+              </Card>
 
         {/* Loading State */}
         <AnimatePresence>
@@ -316,7 +316,7 @@ function QueryPageContent() {
 export default function QueryPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen py-12 px-6 flex items-center justify-center">
+      <div className="min-h-screen py-6 sm:py-12 px-4 sm:px-6 flex items-center justify-center">
         <Loader2 className="w-8 h-8 text-wrench-accent animate-spin" />
       </div>
     }>

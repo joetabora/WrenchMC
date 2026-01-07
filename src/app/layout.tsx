@@ -24,13 +24,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ClientProviders>
           <div className="flex min-h-screen">
             <Sidebar />
-            <div className="flex-1 ml-64">
+            <div className="flex-1 lg:ml-64">
               {/* Top Header */}
               <header className="sticky top-0 z-30 backdrop-blur-md bg-wrench/95 border-b border-wrench-chrome-dark/20 shadow-elevated">
-                <div className="max-w-7xl mx-auto px-6">
-                  <div className="flex items-center justify-between h-16">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6">
+                  <div className="flex items-center justify-between h-14 sm:h-16">
                     <div className="flex items-center gap-4">
-                      <h2 className="text-lg font-bold text-wrench-chrome">WrenchMC Goliath</h2>
+                      <h2 className="text-base sm:text-lg font-bold text-wrench-chrome">WrenchMC Goliath</h2>
                     </div>
                     <HeaderActions />
                   </div>
@@ -43,13 +43,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               </main>
 
               {/* Footer */}
-              <footer className="border-t border-wrench-chrome-dark/20 mt-20 py-8 bg-wrench-dark/50">
-                <div className="max-w-7xl mx-auto px-6">
-                  <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+              <footer className="border-t border-wrench-chrome-dark/20 mt-12 sm:mt-20 py-6 sm:py-8 bg-wrench-dark/50">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6">
+                  <div className="flex flex-col md:flex-row items-center justify-between gap-3 sm:gap-4">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm text-wrench-chrome-dark">WrenchMC Goliath</span>
+                      <span className="text-xs sm:text-sm text-wrench-chrome-dark">WrenchMC Goliath</span>
                     </div>
-                    <p className="text-xs text-gray-500 text-center">
+                    <p className="text-xs text-gray-500 text-center px-2">
                       Community-submitted specs — always verify with official Harley-Davidson manual
                     </p>
                     <div className="text-xs text-gray-500">

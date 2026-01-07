@@ -1,10 +1,20 @@
 // Script to populate Pinecone with embeddings from database
 // Run with: npm run populate-pinecone
 
-import { PrismaClient } from '@prisma/client'
-import { generateEmbedding, generateEmbeddingOpenAI, storeEmbedding } from '../src/lib/embeddings'
+// Load environment variables first
+import dotenv from 'dotenv'
+import { resolve } from 'path'
 
-const prisma = new PrismaClient()
+// Load .env.local file
+dotenv.config({ path: resolve(__dirname, '../.env.local') })
+
+// Set DATABASE_URL for Prisma if PRISMA_DATABASE_URL is set
+if (process.env.PRISMA_DATABASE_URL && !process.env.DATABASE_URL) {
+  process.env.DATABASE_URL = process.env.PRISMA_DATABASE_URL
+}
+
+import { prisma } from '../src/lib/prisma'
+import { generateEmbedding, generateEmbeddingOpenAI, storeEmbedding } from '../src/lib/embeddings'
 
 async function populatePinecone() {
   console.log('🚀 Starting Pinecone population...\n')

@@ -1,87 +1,151 @@
-'use client'
-import React from 'react'
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { motion } from 'framer-motion'
+"use client"
+import React, { useState, useEffect } from 'react'
+import { usePathname, useRouter } from 'next/navigation'
+import { motion, AnimatePresence } from 'framer-motion'
 import {
   Home,
   Search,
   Database,
   Video,
   MessageSquare,
-  Bike,
-  Settings,
   Mic,
-  Wrench,
-  TrendingUp,
+  FilePlus,
+  Menu,
+  X,
+  Sparkles,
 } from 'lucide-react'
+import Link from 'next/link'
 
 const navItems = [
-  { href: '/', label: 'Home', icon: Home },
-  { href: '/query', label: 'AI Query', icon: Search },
-  { href: '/database', label: 'Database', icon: Database },
-  { href: '/tutorials', label: 'Tutorials', icon: Video },
-  { href: '/forum', label: 'Community', icon: MessageSquare },
-  { href: '/models', label: 'Models', icon: Bike },
-  { href: '/voice', label: 'Voice', icon: Mic },
+  { icon: Home, label: 'Home', href: '/' },
+  { icon: Sparkles, label: 'AI Query', href: '/query' },
+  { icon: Search, label: 'Search', href: '/search' },
+  { icon: Database, label: 'Database', href: '/database' },
+  { icon: Video, label: 'Tutorials', href: '/tutorials' },
+  { icon: MessageSquare, label: 'Forum', href: '/forum' },
+  { icon: Mic, label: 'Voice', href: '/voice' },
+  { icon: FilePlus, label: 'Submit Spec', href: '/specs/new' },
 ]
 
 export default function Sidebar() {
+  const [isOpen, setIsOpen] = useState(false)
   const pathname = usePathname()
+  const router = useRouter()
+
+  // Close mobile menu when route changes
+  useEffect(() => {
+    setIsOpen(false)
+  }, [pathname])
+
+  // Prevent body scroll when mobile menu is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+    return () => {
+      document.body.style.overflow = 'unset'
+    }
+  }, [isOpen])
+
+  const handleNavClick = (href: string) => {
+    router.push(href)
+    setIsOpen(false)
+  }
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-64 bg-wrench-dark border-r border-wrench-chrome-dark/20 z-40 flex flex-col">
-      {/* Logo */}
-      <div className="p-6 border-b border-wrench-chrome-dark/20">
-        <Link href="/" className="flex items-center gap-3 group">
-          <motion.div
-            whileHover={{ rotate: 360 }}
-            transition={{ duration: 0.6 }}
-            className="p-2 rounded-lg bg-gradient-accent/20 group-hover:bg-gradient-accent/30 transition-colors"
-          >
-            <Wrench className="w-6 h-6 text-wrench-accent" />
-          </motion.div>
-          <div>
-            <h1 className="text-xl font-bold gradient-text">WrenchMC</h1>
-            <p className="text-xs text-wrench-chrome-dark">Goliath</p>
-          </div>
-        </Link>
-      </div>
+    <>
+      {/* Mobile Menu Button */}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-lg bg-wrench-accent/20 hover:bg-wrench-accent/30 text-wrench-accent transition-colors"
+        aria-label="Toggle menu"
+      >
+        {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+      </button>
 
-      {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-        {navItems.map((item) => {
-          const Icon = item.icon
-          const isActive = pathname === item.href || (item.href !== '/' && pathname?.startsWith(item.href))
-          
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`
-                flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200
-                ${
-                  isActive
-                    ? 'bg-gradient-accent/20 text-wrench-accent border-l-2 border-wrench-accent'
-                    : 'text-wrench-chrome-dark hover:text-wrench-chrome hover:bg-wrench-light/30'
-                }
-              `}
+      {/* Mobile Overlay */}
+      <AnimatePresence>
+        {isOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsOpen(false)}
+              className="lg:hidden fixed inset-0 bg-black/50 z-40"
+            />
+            <motion.div
+              initial={{ x: -280 }}
+              animate={{ x: 0 }}
+              exit={{ x: -280 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="lg:hidden fixed left-0 top-0 bottom-0 w-64 z-40 bg-wrench-dark border-r border-wrench-chrome-dark/20 shadow-2xl overflow-y-auto"
             >
-              <Icon className="w-5 h-5" />
-              <span className="font-medium">{item.label}</span>
-            </Link>
-          )
-        })}
-      </nav>
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-8">
+                  <h2 className="text-xl font-bold text-wrench-chrome">WrenchMC</h2>
+                  <button
+                    onClick={() => setIsOpen(false)}
+                    className="p-2 rounded-lg hover:bg-wrench-light/10 text-wrench-chrome-dark"
+                    aria-label="Close menu"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+                <nav className="space-y-2">
+                  {navItems.map((item) => {
+                    const Icon = item.icon
+                    const isActive = pathname === item.href
+                    return (
+                      <button
+                        key={item.href}
+                        onClick={() => handleNavClick(item.href)}
+                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                          isActive
+                            ? 'bg-wrench-accent/20 text-wrench-accent border border-wrench-accent/30'
+                            : 'text-wrench-chrome-dark hover:bg-wrench-light/10 hover:text-wrench-chrome'
+                        }`}
+                      >
+                        <Icon className="w-5 h-5" />
+                        <span className="font-medium">{item.label}</span>
+                      </button>
+                    )
+                  })}
+                </nav>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
-      {/* Footer */}
-      <div className="p-4 border-t border-wrench-chrome-dark/20">
-        <div className="flex items-center gap-2 text-xs text-wrench-chrome-dark">
-          <TrendingUp className="w-4 h-4" />
-          <span>Powered by AI</span>
+      {/* Desktop Sidebar */}
+      <aside className="hidden lg:flex fixed left-0 top-0 bottom-0 w-64 bg-wrench-dark border-r border-wrench-chrome-dark/20 flex-col z-30">
+        <div className="p-6">
+          <h2 className="text-xl font-bold text-wrench-chrome mb-8">WrenchMC Goliath</h2>
+          <nav className="space-y-2">
+            {navItems.map((item) => {
+              const Icon = item.icon
+              const isActive = pathname === item.href
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                    isActive
+                      ? 'bg-wrench-accent/20 text-wrench-accent border border-wrench-accent/30'
+                      : 'text-wrench-chrome-dark hover:bg-wrench-light/10 hover:text-wrench-chrome'
+                  }`}
+                >
+                  <Icon className="w-5 h-5" />
+                  <span className="font-medium">{item.label}</span>
+                </Link>
+              )
+            })}
+          </nav>
         </div>
-      </div>
-    </aside>
+      </aside>
+    </>
   )
 }
-
