@@ -32,7 +32,7 @@ export async function queryGroq(
       Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
-      model: process.env.GROQ_MODEL || 'llama-3.3-70b-versatile', // Updated to current model
+      model: process.env.GROQ_MODEL || 'llama-3.1-8b-instant', // Fast and current model
       messages: allMessages,
       temperature: 0.7,
       max_tokens: 2000,
