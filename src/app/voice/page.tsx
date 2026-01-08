@@ -19,14 +19,14 @@ export default function VoicePage() {
     setIsSearching(true)
     
     // Get bike from localStorage or profile
-    let bike = null
+    let bike: { year?: string; model?: string } | null = null
     try { 
       bike = JSON.parse(localStorage.getItem('wrenchmc_bike') || 'null') 
     } catch {}
 
     // Enhance query with bike info if user doesn't mention it
     let enhancedQuery = text
-    if (bike?.year && bike?.model && !text.toLowerCase().includes(bike.model.toLowerCase()) && !text.toLowerCase().includes(bike.year)) {
+    if (bike && bike.year && bike.model && !text.toLowerCase().includes(bike.model.toLowerCase()) && !text.toLowerCase().includes(bike.year)) {
       enhancedQuery = `${text} for ${bike.year} ${bike.model}`
     }
 
