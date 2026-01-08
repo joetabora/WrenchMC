@@ -1,21 +1,33 @@
 "use client"
-import React, { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { signIn } from 'next-auth/react'
+import React, { useState, useEffect, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { signIn, useSession } from 'next-auth/react'
 import Input from '@/components/ui/Input'
 import Button from '@/components/ui/Button'
 import Card from '@/components/ui/Card'
 import { motion } from 'framer-motion'
-import { LogIn, UserPlus, Mail, Lock, CheckCircle, AlertCircle, Chrome } from 'lucide-react'
+import { LogIn, UserPlus, Mail, Lock, CheckCircle, AlertCircle, Chrome, Loader2 } from 'lucide-react'
 
-export default function LoginPage() {
+export const dynamic = 'force-dynamic'
+
+function LoginForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const { data: session, status } = useSession()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [isSignUp, setIsSignUp] = useState(false)
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (status === 'authenticated' && session?.user) {
+      const callbackUrl = searchParams.get('callbackUrl') || '/profile'
+      router.push(callbackUrl)
+    }
+  }, [status, session, router, searchParams])
 
   async function handleSignIn(e: React.FormEvent) {
     e.preventDefault()
@@ -24,21 +36,32 @@ export default function LoginPage() {
     setSuccess('')
     
     try {
+      const callbackUrl = searchParams.get('callbackUrl') || '/profile'
+      
       const result = await signIn('credentials', {
         email,
         password,
         redirect: false,
+        callbackUrl,
       })
 
       if (result?.error) {
-        setError(result.error || 'Failed to sign in')
+        setError(result.error || 'Failed to sign in. Please check your credentials.')
+        setLoading(false)
+      } else if (result?.ok || result?.url) {
+        setSuccess(isSignUp ? 'Account created successfully! Redirecting...' : 'Signed in successfully! Redirecting...')
+        
+        // Wait a moment for session to be created, then redirect
+        setTimeout(() => {
+          // Force a refresh to get the new session
+          window.location.href = callbackUrl
+        }, 800)
       } else {
-        setSuccess('Signed in successfully!')
-        setTimeout(() => router.push('/profile'), 1000)
+        setError('Unexpected error occurred')
+        setLoading(false)
       }
     } catch (err: any) {
       setError(err.message || 'An error occurred')
-    } finally {
       setLoading(false)
     }
   }
@@ -137,8 +160,17 @@ export default function LoginPage() {
               className="w-full"
               size="lg"
             >
-              <LogIn className="w-5 h-5 inline mr-2" />
-              Sign In
+              {isSignUp ? (
+                <>
+                  <UserPlus className="w-5 h-5 inline mr-2" />
+                  Create Account
+                </>
+              ) : (
+                <>
+                  <LogIn className="w-5 h-5 inline mr-2" />
+                  Sign In
+                </>
+              )}
             </Button>
 
             <div className="text-center mt-4">
@@ -177,5 +209,17 @@ export default function LoginPage() {
         </Card>
       </div>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen py-12 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-wrench-accent animate-spin" />
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
   )
 }
