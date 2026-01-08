@@ -17,7 +17,7 @@ export default function HeaderActions() {
           <Link href="/profile" passHref>
             <Button variant="ghost" size="sm" className="hidden sm:flex">
               <User className="w-4 h-4 mr-2" />
-              <span className="hidden md:inline">{session.user.name || session.user.email}</span>
+              <span className="hidden md:inline">Account</span>
             </Button>
           </Link>
           <Button
