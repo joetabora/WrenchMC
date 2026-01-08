@@ -4,10 +4,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Home,
-  Search,
-  Database,
   Video,
-  MessageSquare,
   Mic,
   FilePlus,
   Menu,
@@ -18,13 +15,12 @@ import Link from 'next/link'
 
 const navItems = [
   { icon: Home, label: 'Home', href: '/' },
-  { icon: Sparkles, label: 'AI Query', href: '/query' },
-  { icon: Search, label: 'Search', href: '/search' },
-  { icon: Database, label: 'Database', href: '/database' },
-  { icon: Video, label: 'Tutorials', href: '/tutorials' },
-  { icon: MessageSquare, label: 'Forum', href: '/forum' },
+  { icon: Sparkles, label: 'Ask', href: '/ask' },
   { icon: Mic, label: 'Voice', href: '/voice' },
+  { icon: Video, label: 'Tutorials', href: '/tutorials' },
   { icon: FilePlus, label: 'Submit Spec', href: '/specs/new' },
+  // Removed: AI Query, Search, Database (combined into Ask)
+  // Removed: Forum (focusing on AI help, not social)
 ]
 
 export default function Sidebar() {

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import Button from '@/components/ui/Button'
 import Card from '@/components/ui/Card'
 import Input from '@/components/ui/Input'
-import { Search, Mic, Zap, Database, Video, MessageSquare, TrendingUp, Sparkles } from 'lucide-react'
+import { Search, Mic, Zap, Video, Database, TrendingUp, Sparkles, MessageSquare } from 'lucide-react'
 
 export default function Home() {
   const router = useRouter()
@@ -14,7 +14,7 @@ export default function Home() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
     if (query.trim()) {
-      router.push(`/query?q=${encodeURIComponent(query)}`)
+      router.push(`/ask?q=${encodeURIComponent(query)}`)
     }
   }
 
@@ -89,16 +89,16 @@ export default function Home() {
                 className="min-w-[200px]"
               >
                 <Mic className="w-5 h-5 inline mr-2" />
-                Voice Search
+                Voice Ask
               </Button>
               <Button
                 size="lg"
-                variant="outline"
-                onClick={() => router.push('/database')}
+                variant="primary"
+                onClick={() => router.push('/ask')}
                 className="min-w-[200px]"
               >
-                <Database className="w-5 h-5 inline mr-2" />
-                Browse Database
+                <Sparkles className="w-5 h-5 inline mr-2" />
+                Ask Now
               </Button>
             </div>
           </motion.div>
@@ -149,14 +149,20 @@ export default function Home() {
             {[
               {
                 icon: Sparkles,
-                title: 'AI-Powered Queries',
-                description: 'Ask natural language questions and get instant, accurate answers with cited sources',
+                title: 'AI-Powered Ask',
+                description: 'Ask natural language questions and get instant, accurate answers. Answers are cached to save AI tokens!',
                 color: 'from-wrench-accent to-wrench-accent-dark',
+              },
+              {
+                icon: Zap,
+                title: 'Smart Caching',
+                description: 'Previous answers are stored in database. Similar questions get instant responses without using AI tokens.',
+                color: 'from-yellow-600 to-orange-600',
               },
               {
                 icon: Database,
                 title: 'Massive Database',
-                description: 'Thousands of specs, torque values, and technical data for all Harley models',
+                description: 'Thousands of specs, torque values, and technical data for all Harley models from the community',
                 color: 'from-blue-600 to-cyan-600',
               },
               {
@@ -164,12 +170,6 @@ export default function Home() {
                 title: 'Video Tutorials',
                 description: 'Searchable YouTube gallery with top repair videos from expert channels',
                 color: 'from-red-600 to-orange-600',
-              },
-              {
-                icon: MessageSquare,
-                title: 'Community Forum',
-                description: 'Share tips, ask questions, and learn from experienced mechanics',
-                color: 'from-purple-600 to-pink-600',
               },
             ].map((feature, index) => {
               const Icon = feature.icon

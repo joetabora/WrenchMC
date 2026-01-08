@@ -24,29 +24,41 @@ export default function VoicePage() {
     } catch {}
 
     try {
-      const res = await fetch('/api/search', {
+      // Use Ask API for better answers (with caching!)
+      const res = await fetch('/api/ask', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: text, bike_year: (bike as any)?.year, bike_model: (bike as any)?.model })
+        body: JSON.stringify({ query: text })
       })
       const data = await res.json()
-      const items = data.results || []
-      setResults(items)
-
-      if (items.length > 0) {
-        const top = items[0]
-        const txt = `${top.component_name}, torque ${top.torque_spec_low || 'unknown'}${top.torque_spec_high ? ' to ' + top.torque_spec_high : ''} newton meters.`
+      
+      if (data.answer) {
+        // Speak the AI answer (limit length for speech)
+        const answerText = data.answer.substring(0, 500)
+        const u = new SpeechSynthesisUtterance(answerText)
+        u.rate = 0.9
+        window.speechSynthesis.speak(u)
+        
+        // Also show results if there are specs
+        if (data.specs && data.specs.length > 0) {
+          setResults(data.specs)
+        }
+      } else if (data.specs && data.specs.length > 0) {
+        // Fallback: show specs if no AI answer
+        setResults(data.specs)
+        const top = data.specs[0]
+        const txt = `${top.componentName}, torque ${top.torqueSpecLow || 'unknown'}${top.torqueSpecHigh ? ' to ' + top.torqueSpecHigh : ''} newton meters.`
         const u = new SpeechSynthesisUtterance(txt)
         u.rate = 0.9
         window.speechSynthesis.speak(u)
       } else {
-        const u = new SpeechSynthesisUtterance("No matching specs found. Try rephrasing your question.")
+        const u = new SpeechSynthesisUtterance("I couldn't find an answer. Try rephrasing your question.")
         u.rate = 0.9
         window.speechSynthesis.speak(u)
       }
     } catch (error) {
-      console.error('Search error:', error)
-      const u = new SpeechSynthesisUtterance("Sorry, there was an error searching. Please try again.")
+      console.error('Ask error:', error)
+      const u = new SpeechSynthesisUtterance("Sorry, there was an error. Please try again.")
       window.speechSynthesis.speak(u)
     } finally {
       setIsSearching(false)

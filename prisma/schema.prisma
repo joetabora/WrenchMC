@@ -235,18 +235,24 @@ model Embedding {
   @@index([sourceType, sourceId])
 }
 
-// AI query history (for analytics)
+// AI query history (for analytics and caching)
 model QueryHistory {
   id        String   @id @default(cuid())
   query     String   @db.Text
+  normalizedQuery String? // Normalized version for matching (lowercase, trimmed)
   userId    String?
   response  String?  @db.Text
   sources   String[] @default([])
+  specs     Json?    // Store related specs as JSON
+  youtubeVideos Json? // Store related videos as JSON
   success   Boolean  @default(true)
+  viewCount Int      @default(0) // Track how many times this answer was used
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([userId])
   @@index([createdAt])
+  @@index([normalizedQuery]) // Index for fast query matching
 }
 
 // Part finder cache
