@@ -1,5 +1,6 @@
 'use client'
 import React, { useState, useEffect } from 'react'
+import { useSession } from 'next-auth/react'
 import { motion } from 'framer-motion'
 import Card from '@/components/ui/Card'
 import Input from '@/components/ui/Input'
@@ -8,18 +9,47 @@ import { Video, Search, Youtube, ExternalLink, Play } from 'lucide-react'
 import YouTube from 'react-youtube'
 
 export default function TutorialsPage() {
+  const { data: session } = useSession()
   const [tutorials, setTutorials] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
   const [searchQuery, setSearchQuery] = useState('Harley Davidson maintenance')
+  const [userBike, setUserBike] = useState<{ year?: string; model?: string } | null>(null)
 
   useEffect(() => {
+    loadUserBike()
     loadTutorials()
   }, [])
+
+  async function loadUserBike() {
+    if (!session?.user) return
+    
+    try {
+      const res = await fetch('/api/profile', {
+        credentials: 'include',
+      })
+      if (res.ok) {
+        const { profile } = await res.json()
+        if (profile?.bike_year && profile?.bike_model) {
+          setUserBike({ year: profile.bike_year, model: profile.bike_model })
+          // Auto-update search query if user has a bike
+          setSearchQuery(`Harley Davidson ${profile.bike_year} ${profile.bike_model} maintenance`)
+        }
+      }
+    } catch (error) {
+      console.error('Error loading bike profile:', error)
+    }
+  }
 
   async function loadTutorials() {
     setLoading(true)
     try {
-      const res = await fetch(`/api/tutorials?q=${encodeURIComponent(searchQuery)}`)
+      // Enhance query with user's bike if available
+      let enhancedQuery = searchQuery
+      if (userBike?.year && userBike?.model && !searchQuery.toLowerCase().includes(userBike.model.toLowerCase())) {
+        enhancedQuery = `Harley Davidson ${userBike.year} ${userBike.model} ${searchQuery.replace(/Harley Davidson/gi, '').trim()}`
+      }
+      
+      const res = await fetch(`/api/tutorials?q=${encodeURIComponent(enhancedQuery)}`)
       const data = await res.json()
       setTutorials(data.videos || [])
     } catch (error) {

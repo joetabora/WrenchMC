@@ -18,17 +18,25 @@ export default function VoicePage() {
     setLastQuery(text)
     setIsSearching(true)
     
+    // Get bike from localStorage or profile
     let bike = null
     try { 
       bike = JSON.parse(localStorage.getItem('wrenchmc_bike') || 'null') 
     } catch {}
 
+    // Enhance query with bike info if user doesn't mention it
+    let enhancedQuery = text
+    if (bike?.year && bike?.model && !text.toLowerCase().includes(bike.model.toLowerCase()) && !text.toLowerCase().includes(bike.year)) {
+      enhancedQuery = `${text} for ${bike.year} ${bike.model}`
+    }
+
     try {
-      // Use Ask API for better answers (with caching!)
+      // Use Ask API for better answers (with caching!) - API will use user's saved bike
       const res = await fetch('/api/ask', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: text })
+        credentials: 'include',
+        body: JSON.stringify({ query: enhancedQuery })
       })
       const data = await res.json()
       

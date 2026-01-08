@@ -5,6 +5,7 @@ import { queryAIWithRAG } from '@/lib/ai'
 import { searchSimilarContent } from '@/lib/embeddings'
 import { prisma } from '@/lib/prisma'
 import { searchYouTubeVideos } from '@/lib/youtube'
+import { getUserBikeProfile } from '@/lib/user-bike'
 
 // Normalize query for matching (lowercase, trim, remove extra spaces)
 function normalizeQuery(query: string): string {
@@ -110,25 +111,86 @@ export async function POST(req: NextRequest) {
     console.log('🔄 No cached answer found - calling AI...')
 
     // STEP 2: No cache found - call AI
+    // Get user's bike profile for filtering
+    const userBike = await getUserBikeProfile()
+    
     // Search for similar content in vector database
     const similarContent = await searchSimilarContent(query, 5)
     
-    // Also search database for specs
-    const dbSpecs = await prisma.spec.findMany({
-      where: {
-        approved: true,
-        OR: [
-          { componentName: { contains: query, mode: 'insensitive' } },
-          { sequenceNotes: { contains: query, mode: 'insensitive' } },
+    // Search database for specs - filter by user's bike if available
+    const specWhere: any = {
+      approved: true,
+      OR: [
+        { componentName: { contains: query, mode: 'insensitive' } },
+        { sequenceNotes: { contains: query, mode: 'insensitive' } },
+      ],
+    }
+
+    let dbSpecs: any[] = []
+
+    // If user has a bike profile, prioritize specs for their bike
+    if (userBike?.model || userBike?.year) {
+      // Try to find bike-specific specs first
+      const bikeFilterWhere: any = {
+        ...specWhere,
+        AND: [
+          ...(userBike.model ? [
+            {
+              OR: [
+                { applicableModels: { has: userBike.model } },
+                { applicableModels: { has: 'All Models' } },
+                { applicableModels: { isEmpty: true } },
+              ],
+            },
+          ] : []),
+          ...(userBike.year ? [
+            {
+              OR: [
+                { applicableYears: { has: parseInt(userBike.year) } },
+                { applicableYears: { isEmpty: true } },
+              ],
+            },
+          ] : []),
         ],
-      },
-      take: 5,
-      include: {
-        user: {
-          select: { name: true, email: true },
+      }
+
+      const bikeFilteredSpecs = await prisma.spec.findMany({
+        where: bikeFilterWhere,
+        take: 5,
+        include: {
+          user: {
+            select: { name: true, email: true },
+          },
         },
-      },
-    })
+      })
+
+      // If we found bike-specific specs, use those; otherwise fall back to all specs
+      if (bikeFilteredSpecs.length > 0) {
+        dbSpecs = bikeFilteredSpecs
+      } else {
+        // Fallback: search all specs if no bike-specific ones found
+        dbSpecs = await prisma.spec.findMany({
+          where: specWhere,
+          take: 5,
+          include: {
+            user: {
+              select: { name: true, email: true },
+            },
+          },
+        })
+      }
+    } else {
+      // No bike profile - search all specs
+      dbSpecs = await prisma.spec.findMany({
+        where: specWhere,
+        take: 5,
+        include: {
+          user: {
+            select: { name: true, email: true },
+          },
+        },
+      })
+    }
 
     // Combine context from vector search and database
     const context = [
@@ -139,11 +201,19 @@ export async function POST(req: NextRequest) {
       ),
     ]
 
-    // Query AI (Groq/Gemini) with RAG context
-    const { answer, sources } = await queryAIWithRAG(query, context)
+    // Enhance query with bike context for AI
+    const enhancedQuery = userBike?.model && userBike?.year
+      ? `${query} (for ${userBike.year} ${userBike.model}${userBike.variant ? ' ' + userBike.variant : ''})`
+      : query
 
-    // Search YouTube for related tutorials
-    const youtubeVideos = await searchYouTubeVideos(`Harley Davidson ${query}`, 3)
+    // Query AI (Groq/Gemini) with RAG context
+    const { answer, sources } = await queryAIWithRAG(enhancedQuery, context)
+
+    // Search YouTube for related tutorials - include bike info if available
+    const youtubeQuery = userBike?.model && userBike?.year
+      ? `Harley Davidson ${userBike.year} ${userBike.model} ${query}`
+      : `Harley Davidson ${query}`
+    const youtubeVideos = await searchYouTubeVideos(youtubeQuery, 3)
 
     // STEP 3: Save to database for future use (cache it!)
     const savedQuery = await prisma.queryHistory.create({

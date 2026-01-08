@@ -31,8 +31,35 @@ export default function NewSpecPage() {
   useEffect(() => {
     if (!user) {
       router.push('/auth/login')
+    } else {
+      // Load user's bike profile and auto-populate
+      loadUserBikeProfile()
     }
   }, [user, router])
+
+  async function loadUserBikeProfile() {
+    if (!user) return
+    
+    try {
+      const res = await fetch('/api/profile', {
+        credentials: 'include',
+      })
+      if (res.ok) {
+        const { profile } = await res.json()
+        if (profile?.bike_year && profile?.bike_model) {
+          // Auto-populate bike fields
+          if (!applicableYears.includes(profile.bike_year)) {
+            setApplicableYears([profile.bike_year])
+          }
+          if (!applicableModels.includes(profile.bike_model)) {
+            setApplicableModels([profile.bike_model])
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error loading bike profile:', error)
+    }
+  }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault()
@@ -73,15 +100,14 @@ export default function NewSpecPage() {
 
       if (res.ok) {
         setMessage({ type: 'success', text: 'Spec submitted successfully! It will be reviewed before being published.' })
-        // Reset form
+        // Reset form but keep bike pre-populated
         setComponentName('')
         setBoltSize('')
         setTorqueLow('')
         setTorqueHigh('')
         setSequenceNotes('')
         setSourceNotes('')
-        setApplicableYears([])
-        setApplicableModels([])
+        // Don't reset applicableYears/Models - keep user's bike pre-selected
       } else {
         const { error } = await res.json()
         setMessage({ type: 'error', text: error || 'Failed to submit spec' })

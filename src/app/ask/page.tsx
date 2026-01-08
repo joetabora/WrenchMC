@@ -68,9 +68,11 @@ function AskPageContent() {
     setSaveMessage(null)
 
     try {
+      // API will automatically get user's bike profile and filter results
       const res = await fetch('/api/ask', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // Include session cookie
         body: JSON.stringify({ query: queryText }),
       })
 
