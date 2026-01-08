@@ -14,6 +14,7 @@ export default function VoicePage() {
   const [isSearching, setIsSearching] = useState(false)
   const [lastQuery, setLastQuery] = useState('')
   const [isSpeaking, setIsSpeaking] = useState(false)
+  const [hasAnswer, setHasAnswer] = useState(false) // Track if we got an AI answer
   const audioRef = useRef<HTMLAudioElement | null>(null)
 
   // Function to speak text using ElevenLabs (with fallback to Web Speech API)
@@ -112,6 +113,8 @@ export default function VoicePage() {
   async function handleResult(text: string) {
     setLastQuery(text)
     setIsSearching(true)
+    setHasAnswer(false) // Reset answer state
+    setResults([]) // Clear previous results
     
     // Get bike from localStorage or profile
     let bike: { year?: string; model?: string } | null = null
@@ -141,6 +144,9 @@ export default function VoicePage() {
       const data = await res.json()
       
       if (data.answer) {
+        // We got an AI answer - mark as success
+        setHasAnswer(true)
+        
         // Speak the AI answer using ElevenLabs (with fallback)
         await speakText(data.answer)
         
@@ -150,15 +156,19 @@ export default function VoicePage() {
         }
       } else if (data.specs && data.specs.length > 0) {
         // Fallback: show specs if no AI answer
+        setHasAnswer(true) // We still got useful results
         setResults(data.specs)
         const top = data.specs[0]
         const txt = `${top.componentName}, torque ${top.torqueSpecLow || 'unknown'}${top.torqueSpecHigh ? ' to ' + top.torqueSpecHigh : ''} newton meters.`
         await speakText(txt)
       } else {
+        // No answer found
+        setHasAnswer(false)
         await speakText("I couldn't find an answer. Try rephrasing your question.")
       }
     } catch (error) {
       console.error('Ask error:', error)
+      setHasAnswer(false)
       await speakText("Sorry, there was an error. Please try again.")
     } finally {
       setIsSearching(false)
@@ -277,7 +287,8 @@ export default function VoicePage() {
                 ))}
               </div>
             </motion.div>
-          ) : !isSearching && lastQuery ? (
+          ) : !isSearching && lastQuery && !hasAnswer ? (
+            // Only show "No results" if we didn't get an AI answer
             <motion.div
               key="no-results"
               initial={{ opacity: 0, y: 20 }}

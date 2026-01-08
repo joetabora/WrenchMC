@@ -5,13 +5,69 @@ import { Mic, MicOff, Volume2 } from 'lucide-react'
 
 type Props = {
   onResult?: (text: string) => void
+  onSpeakRequest?: (text: string) => void // Optional: use parent's TTS function
 }
 
-export default function VoiceController({ onResult }: Props) {
+export default function VoiceController({ onResult, onSpeakRequest }: Props) {
   const [listening, setListening] = useState(false)
   const [supported, setSupported] = useState(true)
   const [transcript, setTranscript] = useState('')
   const recognitionRef = useRef<any>(null)
+  const audioRef = useRef<HTMLAudioElement | null>(null)
+
+  // Use ElevenLabs for TTS (with fallback to Web Speech API)
+  async function speakWithElevenLabs(text: string) {
+    // If parent provided a speak function, use it
+    if (onSpeakRequest) {
+      onSpeakRequest(text)
+      return
+    }
+
+    // Otherwise, try ElevenLabs directly
+    try {
+      const res = await fetch('/api/voice/tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text }),
+      })
+
+      if (res.ok) {
+        const audioBlob = await res.blob()
+        const audioUrl = URL.createObjectURL(audioBlob)
+        const audio = new Audio(audioUrl)
+        audioRef.current = audio
+
+        audio.onended = () => {
+          URL.revokeObjectURL(audioUrl)
+        }
+
+        audio.onerror = () => {
+          URL.revokeObjectURL(audioUrl)
+          // Fallback to Web Speech API
+          fallbackSpeakText(text)
+        }
+
+        await audio.play()
+        return
+      }
+    } catch (error) {
+      console.warn('ElevenLabs TTS failed, using fallback:', error)
+    }
+
+    // Fallback to Web Speech API
+    fallbackSpeakText(text)
+  }
+
+  // Fallback to Web Speech API
+  function fallbackSpeakText(text: string) {
+    const synth = window.speechSynthesis
+    if (!synth) return
+    const utter = new SpeechSynthesisUtterance(text)
+    utter.lang = 'en-US'
+    utter.rate = 0.9
+    synth.cancel()
+    synth.speak(utter)
+  }
 
   useEffect(() => {
     const SpeechRecognition: any = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
@@ -32,14 +88,15 @@ export default function VoiceController({ onResult }: Props) {
       
       if (ev.results[0].isFinal) {
         onResult?.(text)
-        speakText(`You asked: ${text}. Searching...`)
+        // Use ElevenLabs for the "You asked" confirmation
+        speakWithElevenLabs(`You asked: ${text}. Searching...`)
         setTranscript('')
       }
     }
 
     rec.onerror = (event: any) => {
       console.error('Speech recognition error:', event.error)
-      speakText("Sorry, I didn't catch that. Please try again.")
+      speakWithElevenLabs("Sorry, I didn't catch that. Please try again.")
       setListening(false)
       setTranscript('')
     }
@@ -50,7 +107,7 @@ export default function VoiceController({ onResult }: Props) {
     }
     
     recognitionRef.current = rec
-  }, [onResult])
+  }, [onResult, onSpeakRequest])
 
   function start() {
     if (!recognitionRef.current) return
@@ -69,16 +126,6 @@ export default function VoiceController({ onResult }: Props) {
     }
     setListening(false)
     setTranscript('')
-  }
-
-  function speakText(text: string) {
-    const synth = window.speechSynthesis
-    if (!synth) return
-    const utter = new SpeechSynthesisUtterance(text)
-    utter.lang = 'en-US'
-    utter.rate = 0.9
-    synth.cancel()
-    synth.speak(utter)
   }
 
   if (!supported) {
