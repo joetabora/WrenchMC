@@ -278,6 +278,27 @@ export async function POST(req: NextRequest) {
     
     let errorMessage = error.message || 'Failed to process query'
     
+    // Save failed query to database for tracking (even on error)
+    try {
+      const queryToSave = originalQuery || query || 'Unknown query'
+      const isVoiceQuery = source === 'voice'
+      
+      await prisma.queryHistory.create({
+        data: {
+          query: queryToSave,
+          normalizedQuery: queryToSave ? normalizeQuery(queryToSave) : null,
+          userId: session?.user?.id,
+          response: null, // No response due to error
+          sources: [],
+          success: false, // Mark as failed
+          viewCount: 0,
+        },
+      })
+      console.log(`✅ Failed query saved to database${isVoiceQuery ? ' (VOICE QUERY)' : ''}`)
+    } catch (saveError) {
+      console.error('Failed to save error query to database:', saveError)
+    }
+    
     if (errorMessage.includes('GROQ_API_KEY') || errorMessage.includes('GEMINI_API_KEY')) {
       errorMessage = 'AI API keys not configured. Please add GROQ_API_KEY or GEMINI_API_KEY to your environment variables.'
     } else if (errorMessage.includes('Prisma') || errorMessage.includes('database')) {
