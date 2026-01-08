@@ -68,17 +68,28 @@ async function findCachedQuery(query: string): Promise<any | null> {
 }
 
 export async function POST(req: NextRequest) {
+  // Declare variables outside try block so they're accessible in catch
+  let session: any = null
+  let query: string = ''
+  let originalQuery: string | undefined = undefined
+  let source: string = 'web'
+  let queryToSave: string = ''
+  let isVoiceQuery: boolean = false
+  
   try {
-    const session = await auth()
-    const { query, originalQuery, source = 'web' } = await req.json()
+    session = await auth()
+    const body = await req.json()
+    query = body.query
+    originalQuery = body.originalQuery
+    source = body.source || 'web'
 
     if (!query || typeof query !== 'string') {
       return NextResponse.json({ error: 'Query is required' }, { status: 400 })
     }
 
     // Use original query if provided (for voice queries that get enhanced)
-    const queryToSave = originalQuery || query
-    const isVoiceQuery = source === 'voice'
+    queryToSave = originalQuery || query
+    isVoiceQuery = source === 'voice'
 
     console.log('Ask API - Processing query:', query.substring(0, 50), isVoiceQuery ? '(VOICE)' : '')
 
@@ -280,13 +291,12 @@ export async function POST(req: NextRequest) {
     
     // Save failed query to database for tracking (even on error)
     try {
-      const queryToSave = originalQuery || query || 'Unknown query'
-      const isVoiceQuery = source === 'voice'
+      const failedQueryToSave = queryToSave || query || 'Unknown query'
       
       await prisma.queryHistory.create({
         data: {
-          query: queryToSave,
-          normalizedQuery: queryToSave ? normalizeQuery(queryToSave) : null,
+          query: failedQueryToSave,
+          normalizedQuery: failedQueryToSave ? normalizeQuery(failedQueryToSave) : null,
           userId: session?.user?.id,
           response: null, // No response due to error
           sources: [],
