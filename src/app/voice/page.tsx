@@ -1,5 +1,5 @@
 "use client"
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import dynamic from 'next/dynamic'
 import SpecCard from '@/components/SpecCard'
@@ -13,6 +13,101 @@ export default function VoicePage() {
   const [results, setResults] = useState<any[]>([])
   const [isSearching, setIsSearching] = useState(false)
   const [lastQuery, setLastQuery] = useState('')
+  const [isSpeaking, setIsSpeaking] = useState(false)
+  const audioRef = useRef<HTMLAudioElement | null>(null)
+
+  // Function to speak text using ElevenLabs (with fallback to Web Speech API)
+  async function speakText(text: string) {
+    // Stop any current speech
+    stopSpeaking()
+
+    // Limit text length for speech (500 chars for better performance)
+    const speechText = text.substring(0, 500)
+
+    try {
+      // Try ElevenLabs first
+      const res = await fetch('/api/voice/tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: speechText }),
+      })
+
+      if (res.ok) {
+        // ElevenLabs succeeded - use high-quality audio
+        const audioBlob = await res.blob()
+        const audioUrl = URL.createObjectURL(audioBlob)
+        const audio = new Audio(audioUrl)
+        
+        audioRef.current = audio
+        setIsSpeaking(true)
+
+        audio.onended = () => {
+          setIsSpeaking(false)
+          URL.revokeObjectURL(audioUrl) // Clean up
+        }
+
+        audio.onerror = () => {
+          setIsSpeaking(false)
+          URL.revokeObjectURL(audioUrl)
+          // Fallback to Web Speech API
+          fallbackToWebSpeech(speechText)
+        }
+
+        await audio.play()
+        return
+      } else {
+        // ElevenLabs failed - fallback to Web Speech API
+        console.warn('ElevenLabs TTS failed, using fallback')
+        fallbackToWebSpeech(speechText)
+      }
+    } catch (error) {
+      console.error('TTS error:', error)
+      // Fallback to Web Speech API
+      fallbackToWebSpeech(speechText)
+    }
+  }
+
+  // Fallback to Web Speech API
+  function fallbackToWebSpeech(text: string) {
+    if (!window.speechSynthesis) {
+      console.error('Web Speech API not available')
+      return
+    }
+
+    window.speechSynthesis.cancel()
+    const utterance = new SpeechSynthesisUtterance(text)
+    utterance.lang = 'en-US'
+    utterance.rate = 0.9
+    utterance.pitch = 1.0
+
+    utterance.onend = () => {
+      setIsSpeaking(false)
+    }
+
+    utterance.onerror = () => {
+      setIsSpeaking(false)
+    }
+
+    setIsSpeaking(true)
+    window.speechSynthesis.speak(utterance)
+  }
+
+  // Stop speaking function
+  function stopSpeaking() {
+    // Stop ElevenLabs audio
+    if (audioRef.current) {
+      audioRef.current.pause()
+      audioRef.current.currentTime = 0
+      audioRef.current = null
+    }
+
+    // Stop Web Speech API
+    if (window.speechSynthesis) {
+      window.speechSynthesis.cancel()
+    }
+
+    setIsSpeaking(false)
+  }
 
   async function handleResult(text: string) {
     setLastQuery(text)
@@ -46,11 +141,8 @@ export default function VoicePage() {
       const data = await res.json()
       
       if (data.answer) {
-        // Speak the AI answer (limit length for speech)
-        const answerText = data.answer.substring(0, 500)
-        const u = new SpeechSynthesisUtterance(answerText)
-        u.rate = 0.9
-        window.speechSynthesis.speak(u)
+        // Speak the AI answer using ElevenLabs (with fallback)
+        await speakText(data.answer)
         
         // Also show results if there are specs
         if (data.specs && data.specs.length > 0) {
@@ -61,18 +153,13 @@ export default function VoicePage() {
         setResults(data.specs)
         const top = data.specs[0]
         const txt = `${top.componentName}, torque ${top.torqueSpecLow || 'unknown'}${top.torqueSpecHigh ? ' to ' + top.torqueSpecHigh : ''} newton meters.`
-        const u = new SpeechSynthesisUtterance(txt)
-        u.rate = 0.9
-        window.speechSynthesis.speak(u)
+        await speakText(txt)
       } else {
-        const u = new SpeechSynthesisUtterance("I couldn't find an answer. Try rephrasing your question.")
-        u.rate = 0.9
-        window.speechSynthesis.speak(u)
+        await speakText("I couldn't find an answer. Try rephrasing your question.")
       }
     } catch (error) {
       console.error('Ask error:', error)
-      const u = new SpeechSynthesisUtterance("Sorry, there was an error. Please try again.")
-      window.speechSynthesis.speak(u)
+      await speakText("Sorry, there was an error. Please try again.")
     } finally {
       setIsSearching(false)
     }
@@ -133,7 +220,7 @@ export default function VoicePage() {
 
         {/* Loading State */}
         <AnimatePresence>
-          {isSearching && (
+          {(isSearching || isSpeaking) && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -141,7 +228,20 @@ export default function VoicePage() {
               className="flex flex-col items-center justify-center py-12"
             >
               <Loader2 className="w-10 h-10 text-wrench-accent animate-spin mb-4" />
-              <p className="text-gray-400">Searching and preparing response...</p>
+              <p className="text-gray-400">
+                {isSearching ? 'Searching and preparing response...' : 'Speaking answer...'}
+              </p>
+              {isSpeaking && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={stopSpeaking}
+                  className="mt-4"
+                >
+                  <Volume2 className="w-4 h-4 mr-2" />
+                  Stop Speaking
+                </Button>
+              )}
             </motion.div>
           )}
         </AnimatePresence>
@@ -164,10 +264,11 @@ export default function VoicePage() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => window.speechSynthesis.cancel()}
+                  onClick={stopSpeaking}
+                  disabled={!isSpeaking}
                 >
                   <Volume2 className="w-4 h-4 mr-2" />
-                  Stop Speaking
+                  {isSpeaking ? 'Stop Speaking' : 'Not Speaking'}
                 </Button>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

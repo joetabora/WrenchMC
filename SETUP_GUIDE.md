@@ -237,7 +237,63 @@ https://www.googleapis.com/youtube/v3/search?part=snippet&q=harley+davidson&key=
 
 ---
 
-## 4. Google OAuth Setup (Optional but Recommended)
+## 4. ElevenLabs API Setup (Optional - Enhanced Voice Quality)
+
+ElevenLabs provides high-quality, natural-sounding text-to-speech that makes voice responses sound much better than the default browser TTS.
+
+### Step 1: Create Account
+1. Go to [elevenlabs.io](https://elevenlabs.io)
+2. Click **"Sign Up"** (top right)
+3. Sign up with email or Google
+4. Verify your email
+
+### Step 2: Get API Key
+1. Once logged in, click your profile icon (top right)
+2. Go to **"Profile"** → **"API Keys"** (or go to [elevenlabs.io/app/settings/api-keys](https://elevenlabs.io/app/settings/api-keys))
+3. Click **"Create API Key"**
+4. Give it a name: `WrenchMC Production`
+5. Copy the key (starts with a long alphanumeric string)
+6. **Save it immediately** - you can view it again but be careful
+
+### Step 3: Choose a Voice (Optional)
+1. Go to **"Voice Library"** in your dashboard
+2. Browse available voices (Rachel is the default, but you can choose any)
+3. Click on a voice you like
+4. Copy the **Voice ID** (visible in the URL or voice details)
+5. Popular voices:
+   - **Rachel** (ID: `21m00Tcm4TlvDq8ikWAM`) - Default, friendly female
+   - **Adam** (ID: `pNInz6obpgDQGcFmaJgB`) - Professional male
+   - **Antoni** (ID: `ErXwobaYiN019PkySvjV`) - Clear male voice
+   - Or create your own custom voice!
+
+### Step 4: Choose a Model (Optional)
+- **`eleven_turbo_v2_5`** (Default) - Fast, low latency, good quality
+- **`eleven_multilingual_v2`** - Supports multiple languages
+- **`eleven_monolingual_v1`** - Highest quality, English only
+
+### Step 5: Add to Environment Variables
+Add to your `.env.local`:
+```env
+# ElevenLabs API (Optional - for enhanced voice quality)
+ELEVENLABS_API_KEY="your-api-key-here"
+ELEVENLABS_VOICE_ID="21m00Tcm4TlvDq8ikWAM"  # Optional: defaults to Rachel
+ELEVENLABS_MODEL_ID="eleven_turbo_v2_5"    # Optional: defaults to turbo
+```
+
+**For Vercel Production:**
+1. Go to Vercel Dashboard → Settings → Environment Variables
+2. Add the same variables
+3. Redeploy after adding
+
+**Note:** 
+- ElevenLabs has a free tier (10,000 characters/month)
+- Paid plans start at $5/month with more characters
+- The app automatically falls back to Web Speech API if ElevenLabs fails or isn't configured
+- Voice quality is significantly better with ElevenLabs!
+
+---
+
+## 5. Google OAuth Setup (Optional but Recommended)
 
 ### Step 1: Create OAuth 2.0 Credentials
 1. In Google Cloud Console (same project as YouTube API)
@@ -286,7 +342,7 @@ GOOGLE_CLIENT_SECRET="your-client-secret"
 
 ---
 
-## 5. NextAuth Secret Setup
+## 6. NextAuth Secret Setup
 
 ### Step 1: Generate Secret
 Run this command in your terminal:
@@ -310,7 +366,7 @@ NEXTAUTH_URL="http://localhost:3000"
 
 ---
 
-## 6. Pinecone Setup (Optional - for Vector Storage/RAG)
+## 7. Pinecone Setup (Optional - for Vector Storage/RAG)
 
 ### Step 1: Sign Up
 1. Go to [pinecone.io](https://www.pinecone.io)
@@ -354,7 +410,7 @@ PINECONE_ENVIRONMENT="us-east-1-aws"  # Your actual environment
 
 ---
 
-## 7. Hugging Face Setup (Optional - for Free Embeddings)
+## 8. Hugging Face Setup (Optional - for Free Embeddings)
 
 ### Step 1: Create Account
 1. Go to [huggingface.co](https://huggingface.co)
@@ -381,7 +437,7 @@ HUGGINGFACE_API_KEY="hf_your-actual-token-here"
 
 ---
 
-## 8. OpenAI Setup (Optional - Fallback for Embeddings)
+## 9. OpenAI Setup (Optional - Fallback for Embeddings)
 
 ### Step 1: Create Account
 1. Go to [platform.openai.com](https://platform.openai.com)
@@ -411,7 +467,7 @@ OPENAI_API_KEY="sk-your-actual-api-key-here"
 
 ---
 
-## 9. Complete .env.local File
+## 10. Complete .env.local File
 
 Your final `.env.local` should look like this:
 
@@ -433,6 +489,11 @@ XAI_API_KEY="xai-your-api-key"
 # YouTube Data API - REQUIRED for tutorials
 YOUTUBE_API_KEY="AIzaSyYourAPIKey"
 
+# ElevenLabs API - OPTIONAL (for enhanced voice quality)
+ELEVENLABS_API_KEY="your-elevenlabs-api-key"
+ELEVENLABS_VOICE_ID="21m00Tcm4TlvDq8ikWAM"  # Optional: defaults to Rachel
+ELEVENLABS_MODEL_ID="eleven_turbo_v2_5"    # Optional: defaults to turbo
+
 # Pinecone - OPTIONAL (for better RAG performance)
 PINECONE_API_KEY="pc-your-api-key"
 PINECONE_INDEX_NAME="wrenchmc"
@@ -447,7 +508,7 @@ OPENAI_API_KEY="sk-your-api-key"
 
 ---
 
-## 10. Final Setup Steps
+## 11. Final Setup Steps
 
 ### Step 1: Install Dependencies
 ```bash

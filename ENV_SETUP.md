@@ -49,6 +49,11 @@ GOOGLE_CLIENT_SECRET=your-google-client-secret
 # YouTube Integration (for video tutorials)
 YOUTUBE_API_KEY=your-youtube-api-key
 
+# ElevenLabs API (for enhanced voice quality - optional)
+ELEVENLABS_API_KEY=your-elevenlabs-api-key
+ELEVENLABS_VOICE_ID=21m00Tcm4TlvDq8ikWAM  # Optional: defaults to Rachel
+ELEVENLABS_MODEL_ID=eleven_turbo_v2_5    # Optional: defaults to turbo
+
 # Vector Database (for RAG - optional)
 PINECONE_API_KEY=your-pinecone-api-key
 PINECONE_INDEX_NAME=your-index-name
@@ -87,6 +92,9 @@ OPENAI_API_KEY=your-openai-key  # Paid option
 
    # Optional
    YOUTUBE_API_KEY=your-youtube-api-key-here
+   ELEVENLABS_API_KEY=your-elevenlabs-api-key-here
+   ELEVENLABS_VOICE_ID=21m00Tcm4TlvDq8ikWAM
+   ELEVENLABS_MODEL_ID=eleven_turbo_v2_5
    GOOGLE_CLIENT_ID=your-google-client-id
    GOOGLE_CLIENT_SECRET=your-google-client-secret
    PINECONE_API_KEY=your-pinecone-api-key-here
