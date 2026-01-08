@@ -25,7 +25,13 @@ export async function GET(request: NextRequest) {
       })
     }
 
-    return NextResponse.json({ profile })
+    return NextResponse.json({ 
+      profile: {
+        bike_year: profile.bikeYear,
+        bike_model: profile.bikeModel,
+        bike_variant: profile.bikeVariant,
+      }
+    })
   } catch (error: any) {
     console.error('Profile GET error:', error)
     return NextResponse.json({ error: error.message || 'Failed to load profile' }, { status: 500 })
