@@ -112,12 +112,15 @@ const config: NextAuthConfig = {
       // Allow all sign-ins
       return true
     },
-    async session({ session, user }: any) {
+    async session({ session, user, token }: any) {
       // For database strategy, user is passed directly from adapter
-      if (user?.id) {
-        session.user.id = user.id
+      // For credentials provider, we might need to get user from token or database
+      let userId = user?.id || token?.sub
+      
+      if (userId) {
+        session.user.id = userId
         const dbUser = await prisma.user.findUnique({
-          where: { id: user.id },
+          where: { id: userId },
           include: { profile: true },
         })
         if (dbUser) {
@@ -126,6 +129,13 @@ const config: NextAuthConfig = {
         }
       }
       return session
+    },
+    async jwt({ token, user, account }) {
+      // For credentials provider, store user ID in token
+      if (user) {
+        token.sub = user.id
+      }
+      return token
     },
   },
   session: {

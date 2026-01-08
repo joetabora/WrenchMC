@@ -13,7 +13,7 @@ export const dynamic = 'force-dynamic'
 function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { data: session, status } = useSession()
+  const { data: session, status, update } = useSession()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -48,14 +48,25 @@ function LoginForm() {
       if (result?.error) {
         setError(result.error || 'Failed to sign in. Please check your credentials.')
         setLoading(false)
-      } else if (result?.ok || result?.url) {
+      } else if (result?.ok) {
         setSuccess(isSignUp ? 'Account created successfully! Redirecting...' : 'Signed in successfully! Redirecting...')
         
-        // Wait a moment for session to be created, then redirect
-        setTimeout(() => {
-          // Force a refresh to get the new session
-          window.location.href = callbackUrl
-        }, 800)
+        // Refresh session to ensure it's available, then redirect
+        try {
+          await update() // Refresh session
+          
+          // Wait a moment for session to propagate
+          setTimeout(() => {
+            router.push(callbackUrl)
+            router.refresh() // Force Next.js to refresh the page data
+          }, 300)
+        } catch (err) {
+          // If update fails, still try to redirect (session might be in cookie)
+          setTimeout(() => {
+            router.push(callbackUrl)
+            router.refresh()
+          }, 500)
+        }
       } else {
         setError('Unexpected error occurred')
         setLoading(false)

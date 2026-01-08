@@ -22,12 +22,14 @@ export default function ProfilePage() {
   const [nameMessage, setNameMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
   useEffect(() => {
-    if (!user) {
+    // Only redirect if session is definitely not loading and user is null
+    if (session === null && !updateSession) {
+      // Session check is complete and no user - redirect to login
       router.push('/auth/login')
-    } else {
+    } else if (user) {
       setUserName(user.name || '')
     }
-  }, [user, router])
+  }, [user, session, router, updateSession])
 
   async function handleUpdateName(e: React.FormEvent) {
     e.preventDefault()
