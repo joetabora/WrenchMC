@@ -4,6 +4,7 @@ import { Inter } from 'next/font/google'
 import ClientProviders from '@/components/ClientProviders'
 import Sidebar from '@/components/Sidebar'
 import HeaderActions from '@/components/HeaderActions'
+import ServiceWorkerRegister from '@/components/ServiceWorkerRegister'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -60,6 +61,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               </footer>
             </div>
           </div>
+          {/* Keeps SW updated so users don't get stale cached UI across deploys */}
+          <ServiceWorkerRegister />
         </ClientProviders>
       </body>
     </html>

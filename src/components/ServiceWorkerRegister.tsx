@@ -8,7 +8,12 @@ export default function ServiceWorkerRegister() {
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker
         .register('/sw.js')
-        .then(() => setRegistered(true))
+        .then((reg) => {
+          setRegistered(true)
+          // Ask the browser to check for an updated SW in the background.
+          // Helps ensure old caching logic is replaced quickly.
+          reg.update().catch(() => {})
+        })
         .catch(() => setRegistered(false))
     }
   }, [])
