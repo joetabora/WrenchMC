@@ -31,7 +31,9 @@ export default function BikeSelector({ onChange }: { onChange?: (v: any) => void
     
     setLoading(true)
     try {
-      const res = await fetch('/api/profile')
+      const res = await fetch('/api/profile', {
+        credentials: 'include', // Include cookies for NextAuth
+      })
 
       if (res.ok) {
         const { profile } = await res.json()
@@ -85,6 +87,7 @@ export default function BikeSelector({ onChange }: { onChange?: (v: any) => void
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include', // Include cookies for NextAuth
         body: JSON.stringify(bikeData),
       })
 
