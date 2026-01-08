@@ -51,22 +51,13 @@ function LoginForm() {
       } else if (result?.ok) {
         setSuccess(isSignUp ? 'Account created successfully! Redirecting...' : 'Signed in successfully! Redirecting...')
         
-        // Refresh session to ensure it's available, then redirect
-        try {
-          await update() // Refresh session
-          
-          // Wait a moment for session to propagate
-          setTimeout(() => {
-            router.push(callbackUrl)
-            router.refresh() // Force Next.js to refresh the page data
-          }, 300)
-        } catch (err) {
-          // If update fails, still try to redirect (session might be in cookie)
-          setTimeout(() => {
-            router.push(callbackUrl)
-            router.refresh()
-          }, 500)
-        }
+        // For database strategy, we need to wait for the session to be created
+        // Use a full page reload to ensure cookies are set and session is available
+        setTimeout(() => {
+          // Force a full page reload to the callback URL
+          // This ensures the session cookie is properly set and read
+          window.location.href = callbackUrl
+        }, 1000)
       } else {
         setError('Unexpected error occurred')
         setLoading(false)

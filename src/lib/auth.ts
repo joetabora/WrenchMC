@@ -113,9 +113,27 @@ const config: NextAuthConfig = {
       return true
     },
     async session({ session, user, token }: any) {
-      // For database strategy, user is passed directly from adapter
-      // For credentials provider, we might need to get user from token or database
-      let userId = user?.id || token?.sub
+      // For database strategy with PrismaAdapter:
+      // - OAuth providers: user is passed from adapter
+      // - Credentials provider: user might not be passed, need to get from session token
+      
+      let userId: string | undefined
+      
+      if (user?.id) {
+        // Database strategy - user comes from adapter (OAuth)
+        userId = user.id
+      } else if (token?.sub) {
+        // Credentials provider - user ID stored in token
+        userId = token.sub as string
+      } else if (session?.user?.email) {
+        // Fallback: try to get user by email
+        const dbUser = await prisma.user.findUnique({
+          where: { email: session.user.email },
+        })
+        if (dbUser) {
+          userId = dbUser.id
+        }
+      }
       
       if (userId) {
         session.user.id = userId
@@ -128,10 +146,12 @@ const config: NextAuthConfig = {
           session.user.verified = dbUser.verified as boolean
         }
       }
+      
       return session
     },
     async jwt({ token, user, account }) {
       // For credentials provider, store user ID in token
+      // This is needed even with database strategy for credentials provider
       if (user) {
         token.sub = user.id
       }

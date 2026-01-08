@@ -22,7 +22,12 @@ export default function ProfilePage() {
   const [nameMessage, setNameMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
   useEffect(() => {
-    // Only redirect if session status is 'unauthenticated' (not loading)
+    // Don't redirect while loading - wait for status to be determined
+    if (status === 'loading') {
+      return // Still loading, don't do anything
+    }
+    
+    // Only redirect if definitely unauthenticated
     if (status === 'unauthenticated') {
       router.push('/auth/login')
     } else if (status === 'authenticated' && user) {
