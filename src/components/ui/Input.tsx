@@ -11,15 +11,15 @@ export default function Input({ className = '', ...props }: InputProps) {
       whileFocus={{ scale: 1.02 }}
       className={`
         w-full px-4 py-3 
-        bg-wrench/90
-        backdrop-blur-sm
-        border-2 border-wrench-chrome/20
-        rounded-lg
+        bg-wrench-light/30
+        backdrop-blur-md
+        border border-white/10
+        rounded-xl
         text-wrench-text-primary placeholder:text-wrench-text-muted
-        focus:outline-none focus:ring-2 focus:ring-wrench-accent focus:border-wrench-accent
+        focus:outline-none focus:ring-2 focus:ring-wrench-accent/50 focus:border-wrench-accent
         focus:shadow-glow
-        transition-all duration-300
-        font-medium
+        transition-all duration-200
+        font-normal
         ${className}
       `}
     />

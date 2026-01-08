@@ -27,11 +27,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Sidebar />
             <div className="flex-1 lg:ml-64">
               {/* Top Header */}
-              <header className="sticky top-0 z-30 backdrop-blur-md bg-wrench/95 border-b border-wrench-chrome-dark/20 shadow-elevated">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6">
-                  <div className="flex items-center justify-between h-14 sm:h-16">
+              <header className="sticky top-0 z-30 backdrop-blur-xl bg-wrench-dark/80 border-b border-white/5 shadow-elevated">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                  <div className="flex items-center justify-between h-16">
                     <div className="flex items-center gap-4">
-                      <h2 className="text-base sm:text-lg font-bold text-wrench-chrome">WrenchMC Goliath</h2>
+                      <h2 className="text-base sm:text-lg font-semibold text-wrench-text-primary">WrenchMC Goliath</h2>
                     </div>
                     <HeaderActions />
                   </div>
@@ -44,16 +44,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               </main>
 
               {/* Footer */}
-              <footer className="border-t border-wrench-chrome-dark/20 mt-12 sm:mt-20 py-6 sm:py-8 bg-wrench-dark/50">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6">
-                  <div className="flex flex-col md:flex-row items-center justify-between gap-3 sm:gap-4">
+              <footer className="border-t border-white/5 mt-16 sm:mt-24 py-8 sm:py-10 bg-wrench-dark/30 backdrop-blur-sm">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                  <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs sm:text-sm text-wrench-chrome-dark">WrenchMC Goliath</span>
+                      <span className="text-sm text-wrench-text-muted font-medium">WrenchMC Goliath</span>
                     </div>
-                    <p className="text-xs text-gray-500 text-center px-2">
+                    <p className="text-xs text-wrench-text-muted text-center px-4 max-w-2xl">
                       Community-submitted specs — always verify with official Harley-Davidson manual
                     </p>
-                    <div className="text-xs text-gray-500">
+                    <div className="text-xs text-wrench-text-muted">
                       Built for the community
                     </div>
                   </div>

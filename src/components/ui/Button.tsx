@@ -21,25 +21,25 @@ export default function Button({
   onDragEnd,
   ...props 
 }: ButtonProps) {
-  const baseStyles = 'relative font-bold uppercase tracking-wider rounded-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-wrench-accent focus:ring-offset-2 focus:ring-offset-wrench-dark disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden border border-transparent'
+  const baseStyles = 'relative font-medium rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-wrench-accent/50 focus:ring-offset-2 focus:ring-offset-wrench-dark disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden'
   
   const variants = {
-    primary: 'bg-gradient-accent text-white hover:shadow-glow-lg hover:scale-105 active:scale-95 border-wrench-accent/50 shadow-glow',
-    secondary: 'bg-wrench-light text-wrench-text-primary hover:bg-wrench-light-soft hover:scale-105 active:scale-95 border-wrench-chrome/30 shadow-elevated',
-    outline: 'border-2 border-wrench-accent text-wrench-accent hover:bg-wrench-accent/20 hover:shadow-glow hover:scale-105 active:scale-95 bg-transparent',
-    ghost: 'text-wrench-accent hover:bg-wrench-accent/10 hover:scale-105 active:scale-95 bg-transparent'
+    primary: 'bg-gradient-accent text-white hover:shadow-glow hover:scale-[1.02] active:scale-[0.98] shadow-elevated',
+    secondary: 'bg-wrench-light/50 backdrop-blur-sm text-wrench-text-primary hover:bg-wrench-light border border-white/10 hover:border-white/20 hover:scale-[1.02] active:scale-[0.98] shadow-elevated',
+    outline: 'border border-wrench-accent/50 text-wrench-accent hover:bg-wrench-accent/10 hover:border-wrench-accent hover:scale-[1.02] active:scale-[0.98] bg-transparent',
+    ghost: 'text-wrench-accent hover:bg-wrench-accent/10 hover:scale-[1.02] active:scale-[0.98] bg-transparent'
   }
   
   const sizes = {
-    sm: 'px-3 py-1.5 text-sm',
-    md: 'px-6 py-3 text-base',
-    lg: 'px-8 py-4 text-lg'
+    sm: 'px-4 py-2 text-sm',
+    md: 'px-6 py-2.5 text-base',
+    lg: 'px-8 py-3 text-lg'
   }
   
   return (
     <motion.button
-      whileHover={{ scale: disabled || isLoading ? 1 : 1.05 }}
-      whileTap={{ scale: disabled || isLoading ? 1 : 0.95 }}
+      whileHover={{ scale: disabled || isLoading ? 1 : 1.02 }}
+      whileTap={{ scale: disabled || isLoading ? 1 : 0.98 }}
       className={`${baseStyles} ${variants[variant]} ${sizes[size]} ${className}`}
       disabled={disabled || isLoading}
       {...props}

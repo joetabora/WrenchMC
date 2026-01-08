@@ -16,7 +16,7 @@ export default function Card({ children, className = '', hover = true, delay = 0
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay }}
-      whileHover={hover ? { scale: 1.02, y: -4 } : {}}
+      whileHover={hover ? { y: -2 } : {}}
       className={`card ${className} ${onClick ? 'cursor-pointer' : ''}`}
       onClick={onClick}
     >

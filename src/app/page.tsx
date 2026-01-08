@@ -28,36 +28,31 @@ export default function Home() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative overflow-hidden py-20 md:py-32 bg-gradient-hero">
-        <div
-          className="absolute inset-0 opacity-10"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-          }}
-        />
+      <section className="relative overflow-hidden py-24 md:py-36">
+        <div className="absolute inset-0 bg-gradient-to-b from-wrench-dark via-wrench-dark to-wrench" />
 
-        <div className="relative max-w-6xl mx-auto px-6 text-center">
+        <div className="relative max-w-5xl mx-auto px-6 text-center">
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
+            transition={{ duration: 0.6 }}
           >
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
-              transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
-              className="inline-block mb-6 p-4 rounded-full bg-wrench-accent/20 shadow-glow"
+              transition={{ delay: 0.1, type: 'spring', stiffness: 200 }}
+              className="inline-block mb-8 p-3 rounded-2xl bg-wrench-accent/10 backdrop-blur-sm border border-wrench-accent/20"
             >
-              <Sparkles className="w-16 h-16 text-wrench-accent animate-pulse-slow" />
+              <Sparkles className="w-12 h-12 text-wrench-accent" />
             </motion.div>
 
-            <h1 className="text-5xl md:text-7xl font-extrabold mb-6 tracking-tight">
+            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 tracking-tight">
               <span className="gradient-text">WrenchMC Goliath</span>
             </h1>
-            <p className="text-xl md:text-2xl text-wrench-chrome-dark mb-4 max-w-2xl mx-auto">
+            <p className="text-xl md:text-2xl text-wrench-text-secondary mb-4 max-w-2xl mx-auto font-light">
               The ultimate AI-powered Harley-Davidson maintenance database
             </p>
-            <p className="text-lg text-wrench-chrome-dark mb-12">
+            <p className="text-base md:text-lg text-wrench-text-muted mb-12 max-w-xl mx-auto">
               Every bolt, torque value, and repair trick for all models from 1903 to now
             </p>
 
@@ -65,15 +60,15 @@ export default function Home() {
             <motion.form
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
+              transition={{ delay: 0.2 }}
               onSubmit={handleSearch}
-              className="flex flex-col sm:flex-row gap-3 max-w-2xl mx-auto mb-8 px-4"
+              className="flex flex-col sm:flex-row gap-3 max-w-2xl mx-auto mb-10"
             >
               <Input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Ask anything: 'Torque specs for transmission cover on 2005 Road King'"
-                className="flex-1 text-base sm:text-lg"
+                className="flex-1"
               />
               <Button type="submit" size="lg" className="w-full sm:w-auto">
                 <Search className="w-5 h-5 mr-2" />
@@ -81,23 +76,23 @@ export default function Home() {
               </Button>
             </motion.form>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
               <Button
                 size="lg"
                 variant="outline"
                 onClick={() => router.push('/voice')}
-                className="min-w-[200px]"
+                className="min-w-[180px]"
               >
-                <Mic className="w-5 h-5 inline mr-2" />
+                <Mic className="w-5 h-5 mr-2" />
                 Voice Ask
               </Button>
               <Button
                 size="lg"
                 variant="primary"
                 onClick={() => router.push('/ask')}
-                className="min-w-[200px]"
+                className="min-w-[180px]"
               >
-                <Sparkles className="w-5 h-5 inline mr-2" />
+                <Sparkles className="w-5 h-5 mr-2" />
                 Ask Now
               </Button>
             </div>
@@ -106,9 +101,9 @@ export default function Home() {
       </section>
 
       {/* Quick Queries */}
-      <section className="py-12 px-6">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-2xl font-bold mb-6 text-wrench-chrome flex items-center gap-2">
+      <section className="py-16 px-6">
+        <div className="max-w-5xl mx-auto">
+          <h2 className="text-2xl font-semibold mb-8 text-wrench-text-primary flex items-center gap-3">
             <TrendingUp className="w-6 h-6 text-wrench-accent" />
             Trending Queries
           </h2>
@@ -116,11 +111,11 @@ export default function Home() {
             {quickQueries.map((q, i) => (
               <Card
                 key={i}
-                delay={i * 0.1}
-                className="cursor-pointer hover:border-wrench-accent/50"
+                delay={i * 0.05}
+                className="cursor-pointer"
                 onClick={() => router.push(`/query?q=${encodeURIComponent(q)}`)}
               >
-                <p className="text-wrench-chrome">{q}</p>
+                <p className="text-wrench-text-secondary leading-relaxed">{q}</p>
               </Card>
             ))}
           </div>
@@ -128,19 +123,19 @@ export default function Home() {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 px-6">
-        <div className="max-w-6xl mx-auto">
+      <section className="py-24 px-6">
+        <div className="max-w-5xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
+            transition={{ duration: 0.5 }}
             className="text-center mb-16"
           >
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">
               Everything you need to <span className="gradient-text">wrench smarter</span>
             </h2>
-            <p className="text-xl text-wrench-chrome-dark max-w-2xl mx-auto">
+            <p className="text-lg text-wrench-text-secondary max-w-2xl mx-auto">
               AI-powered answers, comprehensive database, video tutorials, and community knowledge
             </p>
           </motion.div>
@@ -151,38 +146,38 @@ export default function Home() {
                 icon: Sparkles,
                 title: 'AI-Powered Ask',
                 description: 'Ask natural language questions and get instant, accurate answers. Answers are cached to save AI tokens!',
-                color: 'from-wrench-accent to-wrench-accent-dark',
+                color: 'from-blue-500 to-blue-600',
               },
               {
                 icon: Zap,
                 title: 'Smart Caching',
                 description: 'Previous answers are stored in database. Similar questions get instant responses without using AI tokens.',
-                color: 'from-yellow-600 to-orange-600',
+                color: 'from-amber-500 to-orange-500',
               },
               {
                 icon: Database,
                 title: 'Massive Database',
                 description: 'Thousands of specs, torque values, and technical data for all Harley models from the community',
-                color: 'from-blue-600 to-cyan-600',
+                color: 'from-cyan-500 to-blue-500',
               },
               {
                 icon: Video,
                 title: 'Video Tutorials',
                 description: 'Searchable YouTube gallery with top repair videos from expert channels',
-                color: 'from-red-600 to-orange-600',
+                color: 'from-red-500 to-pink-500',
               },
             ].map((feature, index) => {
               const Icon = feature.icon
               return (
-                <Card key={feature.title} delay={index * 0.1} className="text-center">
+                <Card key={feature.title} delay={index * 0.05} className="text-center">
                   <motion.div
-                    whileHover={{ scale: 1.05, rotate: 3 }}
-                    className={`inline-flex p-4 rounded-2xl bg-gradient-to-br ${feature.color} mb-4 shadow-md`}
+                    whileHover={{ scale: 1.05 }}
+                    className={`inline-flex p-3 rounded-xl bg-gradient-to-br ${feature.color} mb-4`}
                   >
-                    <Icon className="w-8 h-8 text-white" />
+                    <Icon className="w-7 h-7 text-white" />
                   </motion.div>
-                  <h3 className="text-xl font-bold mb-2 text-wrench-chrome">{feature.title}</h3>
-                  <p className="text-wrench-chrome-dark text-sm">{feature.description}</p>
+                  <h3 className="text-lg font-semibold mb-2 text-wrench-text-primary">{feature.title}</h3>
+                  <p className="text-wrench-text-secondary text-sm leading-relaxed">{feature.description}</p>
                 </Card>
               )
             })}
