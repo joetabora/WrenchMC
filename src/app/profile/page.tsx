@@ -13,7 +13,7 @@ import { User, Bike, Mail, LogOut, Save, CheckCircle, AlertCircle, UserCircle } 
 import { signOut as nextAuthSignOut } from 'next-auth/react'
 
 export default function ProfilePage() {
-  const { data: session, update: updateSession } = useSession()
+  const { data: session, status, update: updateSession } = useSession()
   const user = session?.user
   const router = useRouter()
   const [profile, setProfile] = useState<any>(null)
@@ -22,14 +22,13 @@ export default function ProfilePage() {
   const [nameMessage, setNameMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
   useEffect(() => {
-    // Only redirect if session is definitely not loading and user is null
-    if (session === null && !updateSession) {
-      // Session check is complete and no user - redirect to login
+    // Only redirect if session status is 'unauthenticated' (not loading)
+    if (status === 'unauthenticated') {
       router.push('/auth/login')
-    } else if (user) {
+    } else if (status === 'authenticated' && user) {
       setUserName(user.name || '')
     }
-  }, [user, session, router, updateSession])
+  }, [status, user, router])
 
   async function handleUpdateName(e: React.FormEvent) {
     e.preventDefault()
