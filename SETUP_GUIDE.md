@@ -252,7 +252,37 @@ ElevenLabs provides high-quality, natural-sounding text-to-speech that makes voi
 2. Go to **"Profile"** → **"API Keys"** (or go to [elevenlabs.io/app/settings/api-keys](https://elevenlabs.io/app/settings/api-keys))
 3. Click **"Create API Key"**
 4. Give it a name: `WrenchMC Production`
-5. Copy the key (starts with a long alphanumeric string)
+
+### Step 2a: Configure API Key Permissions
+When creating the API key, you'll see permission options. Set these for security:
+
+**Required:**
+- **Text to Speech**: **Access** ✅ (This is the main feature we need)
+
+**Optional but Recommended:**
+- **Voices**: **Read** ✅ (Allows browsing available voices)
+- **Models**: **Read** ✅ (Helps verify available models)
+
+**Everything Else**: **No Access** ❌
+- Speech to Speech: No Access
+- Speech to Text: No Access
+- Sound Effects: No Access
+- Audio Isolation: No Access
+- Music Generation: No Access
+- Dubbing: No Access
+- ElevenLabs Agents: No Access
+- Projects: No Access
+- Audio Native: No Access
+- Voice Generation: No Access
+- Forced Alignment: No Access
+- History: No Access
+- Pronunciation Dictionaries: No Access
+- User: No Access
+- Workspace: No Access
+
+**Note:** The app will work with just "Text to Speech: Access" - everything else is optional for security.
+
+5. After setting permissions, copy the key (starts with a long alphanumeric string)
 6. **Save it immediately** - you can view it again but be careful
 
 ### Step 3: Choose a Voice (Optional)
