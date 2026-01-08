@@ -32,11 +32,16 @@ export default function VoicePage() {
 
     try {
       // Use Ask API for better answers (with caching!) - API will use user's saved bike
+      // Pass original voice query and enhanced query so both are saved
       const res = await fetch('/api/ask', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ query: enhancedQuery })
+        body: JSON.stringify({ 
+          query: enhancedQuery, // Enhanced query for search
+          originalQuery: text, // Original voice query to save
+          source: 'voice' // Mark as voice query
+        })
       })
       const data = await res.json()
       

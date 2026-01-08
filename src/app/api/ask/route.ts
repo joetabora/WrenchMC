@@ -70,13 +70,17 @@ async function findCachedQuery(query: string): Promise<any | null> {
 export async function POST(req: NextRequest) {
   try {
     const session = await auth()
-    const { query } = await req.json()
+    const { query, originalQuery, source = 'web' } = await req.json()
 
     if (!query || typeof query !== 'string') {
       return NextResponse.json({ error: 'Query is required' }, { status: 400 })
     }
 
-    console.log('Ask API - Processing query:', query.substring(0, 50))
+    // Use original query if provided (for voice queries that get enhanced)
+    const queryToSave = originalQuery || query
+    const isVoiceQuery = source === 'voice'
+
+    console.log('Ask API - Processing query:', query.substring(0, 50), isVoiceQuery ? '(VOICE)' : '')
 
     // STEP 1: Check for cached answer first (saves AI tokens!)
     const cachedAnswer = await findCachedQuery(query)
@@ -89,6 +93,24 @@ export async function POST(req: NextRequest) {
         where: { id: cachedAnswer.id },
         data: { viewCount: { increment: 1 } },
       })
+
+      // For voice queries, always save a record even if cached (to track voice usage)
+      if (isVoiceQuery && queryToSave) {
+        await prisma.queryHistory.create({
+          data: {
+            query: queryToSave,
+            normalizedQuery: normalizeQuery(queryToSave),
+            userId: session?.user?.id,
+            response: cachedAnswer.response, // Reference to cached answer
+            sources: cachedAnswer.sources || [],
+            specs: cachedAnswer.specs,
+            youtubeVideos: cachedAnswer.youtubeVideos,
+            success: true,
+            viewCount: 0, // This is a reference to cached answer, not a new answer
+          },
+        })
+        console.log('✅ Voice query saved to database (referencing cached answer)')
+      }
 
       // Parse stored data (handle both JSON string and object)
       const specs = cachedAnswer.specs 
@@ -216,10 +238,11 @@ export async function POST(req: NextRequest) {
     const youtubeVideos = await searchYouTubeVideos(youtubeQuery, 3)
 
     // STEP 3: Save to database for future use (cache it!)
+    // Save with original query if provided (for voice), otherwise use enhanced query
     const savedQuery = await prisma.queryHistory.create({
       data: {
-        query,
-        normalizedQuery: normalizeQuery(query),
+        query: queryToSave, // Save original voice query if available, otherwise enhanced query
+        normalizedQuery: normalizeQuery(query), // Normalize the search query for matching
         userId: session?.user?.id,
         response: answer,
         sources: sources,
@@ -230,7 +253,7 @@ export async function POST(req: NextRequest) {
       },
     })
 
-    console.log('✅ Answer saved to database for future caching')
+    console.log(`✅ Answer saved to database for future caching${isVoiceQuery ? ' (VOICE QUERY)' : ''}`)
 
     return NextResponse.json({
       answer,
