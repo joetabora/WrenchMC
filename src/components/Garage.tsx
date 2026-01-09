@@ -77,9 +77,17 @@ export default function Garage({ onChange }: { onChange?: (activeBike: GarageBik
             variant: activeBike.bikeVariant,
           }))
         }
+      } else {
+        // Garage API might not be available if migration hasn't run
+        // Silently fail - garage feature will work after migration
+        const errorData = await res.json().catch(() => ({}))
+        if (errorData.error?.includes('does not exist') || errorData.error?.includes('relation') || res.status === 500) {
+          console.warn('Garage feature not available yet - migration may need to be run')
+        }
       }
     } catch (error) {
-      console.error('Error loading garage:', error)
+      // Silently handle errors - garage feature is optional
+      console.warn('Garage feature not available:', error)
     } finally {
       setLoading(false)
     }

@@ -21,7 +21,6 @@ export async function getUserBikeProfile(): Promise<BikeProfile | null> {
         bikeYear: true,
         bikeModel: true,
         bikeVariant: true,
-        activeBikeId: true,
       },
     })
 
@@ -29,23 +28,44 @@ export async function getUserBikeProfile(): Promise<BikeProfile | null> {
       return null
     }
 
-    // If user has an active bike in garage, use that
-    if (profile.activeBikeId) {
-      const activeBike = await prisma.garage.findUnique({
-        where: { id: profile.activeBikeId },
+    // Try to get activeBikeId separately (column might not exist if migration hasn't run)
+    let activeBikeId: string | null = null
+    try {
+      const profileWithActiveBike = await prisma.userProfile.findUnique({
+        where: { userId: session.user.id },
         select: {
-          bikeYear: true,
-          bikeModel: true,
-          bikeVariant: true,
+          activeBikeId: true,
         },
       })
+      activeBikeId = (profileWithActiveBike as any)?.activeBikeId || null
+    } catch (error) {
+      // activeBikeId column might not exist yet - that's okay
+      console.warn('activeBikeId column not available:', error)
+    }
 
-      if (activeBike) {
-        return {
-          year: activeBike.bikeYear,
-          model: activeBike.bikeModel,
-          variant: activeBike.bikeVariant,
+    // If user has an active bike in garage, use that (gracefully handle if Garage table doesn't exist yet)
+    if (activeBikeId) {
+      try {
+        const activeBike = await prisma.garage.findUnique({
+          where: { id: profile.activeBikeId },
+          select: {
+            bikeYear: true,
+            bikeModel: true,
+            bikeVariant: true,
+          },
+        })
+
+        if (activeBike) {
+          return {
+            year: activeBike.bikeYear,
+            model: activeBike.bikeModel,
+            variant: activeBike.bikeVariant,
+          }
         }
+      } catch (error) {
+        // Garage table might not exist yet (migration not run)
+        // Silently fall back to profile bike fields
+        console.warn('Garage table not available, using profile bike fields:', error)
       }
     }
 

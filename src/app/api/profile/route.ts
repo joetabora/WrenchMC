@@ -12,31 +12,85 @@ export async function GET(request: NextRequest) {
     }
 
     // Get or create user profile
-    let profile = await prisma.userProfile.findUnique({
-      where: { userId: session.user.id },
-    })
+    // Gracefully handle if activeBikeId column or Garage table don't exist yet (migration not run)
+    let profile: any
+    let activeBikeId: string | null = null
+    
+    try {
+      profile = await prisma.userProfile.findUnique({
+        where: { userId: session.user.id },
+      })
+      
+      // Try to access activeBikeId safely (column might not exist if migration hasn't run)
+      // Use type assertion to avoid TypeScript errors, but handle runtime errors
+      try {
+        activeBikeId = (profile as any)?.activeBikeId || null
+      } catch {
+        activeBikeId = null
+      }
+    } catch (error: any) {
+      // If query fails due to schema mismatch, try with explicit column selection
+      if (error?.message?.includes('does not exist') || error?.message?.includes('column') || error?.code === 'P2021') {
+        console.warn('Schema mismatch detected, using basic profile query:', error.message)
+        try {
+          profile = await prisma.userProfile.findUnique({
+            where: { userId: session.user.id },
+            select: {
+              bikeYear: true,
+              bikeModel: true,
+              bikeVariant: true,
+            },
+          })
+        } catch (retryError) {
+          // If that also fails, return error
+          throw retryError
+        }
+      } else {
+        throw error
+      }
+    }
 
     if (!profile) {
       // Create profile if it doesn't exist
-      profile = await prisma.userProfile.create({
-        data: {
-          userId: session.user.id,
-        },
-      })
+      try {
+        profile = await prisma.userProfile.create({
+          data: {
+            userId: session.user.id,
+          },
+        })
+      } catch (createError: any) {
+        // If create fails due to schema issues, still return basic profile
+        console.warn('Error creating profile:', createError)
+        profile = {
+          bikeYear: null,
+          bikeModel: null,
+          bikeVariant: null,
+        }
+      }
     }
 
-    // Get active bike from garage if available
+    // Get active bike from garage if available (gracefully handle if Garage table doesn't exist yet)
     let activeBike: { bikeYear: string | null; bikeModel: string | null; bikeVariant: string | null } | null = null
-    if (profile.activeBikeId) {
-      const bike = await prisma.garage.findUnique({
-        where: { id: profile.activeBikeId },
-        select: {
-          bikeYear: true,
-          bikeModel: true,
-          bikeVariant: true,
-        },
-      })
-      activeBike = bike
+    if (activeBikeId) {
+      try {
+        const bike = await prisma.garage.findUnique({
+          where: { id: activeBikeId },
+          select: {
+            bikeYear: true,
+            bikeModel: true,
+            bikeVariant: true,
+          },
+        })
+        activeBike = bike
+      } catch (error: any) {
+        // Garage table might not exist yet (migration not run)
+        // Silently fall back to profile bike fields
+        if (error?.message?.includes('does not exist') || error?.message?.includes('relation') || error?.message?.includes('table') || error?.code === 'P2021') {
+          console.warn('Garage feature not available yet - migration may need to be run')
+        } else {
+          console.warn('Error loading active bike from garage:', error)
+        }
+      }
     }
 
     // Fallback to profile bike fields for backward compatibility
@@ -45,7 +99,7 @@ export async function GET(request: NextRequest) {
         bike_year: activeBike?.bikeYear || profile.bikeYear,
         bike_model: activeBike?.bikeModel || profile.bikeModel,
         bike_variant: activeBike?.bikeVariant || profile.bikeVariant,
-        activeBikeId: profile.activeBikeId,
+        activeBikeId: activeBikeId || null,
       }
     })
   } catch (error: any) {
