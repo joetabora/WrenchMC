@@ -14,6 +14,8 @@ export default function VoiceController({ onResult, onSpeakRequest }: Props) {
   const [transcript, setTranscript] = useState('')
   const recognitionRef = useRef<any>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
+  const silenceTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const finalTranscriptRef = useRef<string>('')
 
   async function speakWithElevenLabs(text: string) {
     if (onSpeakRequest) {
@@ -73,39 +75,108 @@ export default function VoiceController({ onResult, onSpeakRequest }: Props) {
     const rec = new SpeechRecognition()
     rec.lang = 'en-US'
     rec.interimResults = true
-    rec.continuous = false
+    rec.continuous = true // Keep listening continuously
     rec.maxAlternatives = 1
 
     rec.onresult = (ev: any) => {
-      const text = ev.results[0][0].transcript
-      setTranscript(text)
+      let interimTranscript = ''
+      let finalTranscript = ''
       
-      if (ev.results[0].isFinal) {
-        onResult?.(text)
-        // Removed question verification announcement to prevent audio overlap
-        // The question is already displayed on screen
-        setTranscript('')
+      // Process all results
+      for (let i = ev.resultIndex; i < ev.results.length; i++) {
+        const transcript = ev.results[i][0].transcript
+        if (ev.results[i].isFinal) {
+          finalTranscript += transcript + ' '
+        } else {
+          interimTranscript += transcript
+        }
+      }
+      
+      // Update final transcript reference
+      if (finalTranscript) {
+        finalTranscriptRef.current += finalTranscript
+      }
+      
+      // Show combined transcript
+      const displayText = finalTranscriptRef.current + interimTranscript
+      setTranscript(displayText.trim())
+      
+      // Clear any existing timeout
+      if (silenceTimeoutRef.current) {
+        clearTimeout(silenceTimeoutRef.current)
+      }
+      
+      // If we got final results, wait for a pause before processing
+      if (finalTranscript) {
+        // Wait 2.5 seconds of silence before processing the question
+        // This gives users time to continue speaking or finish their thought
+        silenceTimeoutRef.current = setTimeout(() => {
+          const completeQuestion = finalTranscriptRef.current.trim()
+          if (completeQuestion) {
+            onResult?.(completeQuestion)
+            finalTranscriptRef.current = ''
+            setTranscript('')
+            // Stop recognition after processing
+            if (recognitionRef.current) {
+              recognitionRef.current.stop()
+            }
+          }
+        }, 2500) // 2.5 seconds of silence
       }
     }
 
     rec.onerror = (event: any) => {
       console.error('Speech recognition error:', event.error)
-      speakWithElevenLabs("Sorry, I didn't catch that. Please try again.")
+      if (silenceTimeoutRef.current) {
+        clearTimeout(silenceTimeoutRef.current)
+      }
+      // Only show error for actual errors, not "no-speech" which is normal
+      if (event.error !== 'no-speech') {
+        speakWithElevenLabs("Sorry, I didn't catch that. Please try again.")
+      }
       setListening(false)
       setTranscript('')
+      finalTranscriptRef.current = ''
     }
 
     rec.onend = () => {
+      // Clear timeout if recognition ends
+      if (silenceTimeoutRef.current) {
+        clearTimeout(silenceTimeoutRef.current)
+      }
+      
+      // If we have a final transcript but haven't processed it yet, process it now
+      if (finalTranscriptRef.current.trim() && listening) {
+        const completeQuestion = finalTranscriptRef.current.trim()
+        onResult?.(completeQuestion)
+        finalTranscriptRef.current = ''
+      }
+      
       setListening(false)
       setTranscript('')
     }
     
     recognitionRef.current = rec
+    
+    // Cleanup function
+    return () => {
+      if (silenceTimeoutRef.current) {
+        clearTimeout(silenceTimeoutRef.current)
+      }
+      if (recognitionRef.current) {
+        recognitionRef.current.stop()
+      }
+    }
   }, [onResult, onSpeakRequest])
 
   function start() {
     if (!recognitionRef.current) return
     try {
+      // Clear any pending timeouts
+      if (silenceTimeoutRef.current) {
+        clearTimeout(silenceTimeoutRef.current)
+      }
+      finalTranscriptRef.current = ''
       recognitionRef.current.start()
       setListening(true)
       setTranscript('')
@@ -115,9 +186,22 @@ export default function VoiceController({ onResult, onSpeakRequest }: Props) {
   }
 
   function stop() {
+    // Clear timeout
+    if (silenceTimeoutRef.current) {
+      clearTimeout(silenceTimeoutRef.current)
+    }
+    
     if (recognitionRef.current) {
       recognitionRef.current.stop()
     }
+    
+    // If we have a final transcript, process it immediately
+    if (finalTranscriptRef.current.trim()) {
+      const completeQuestion = finalTranscriptRef.current.trim()
+      onResult?.(completeQuestion)
+      finalTranscriptRef.current = ''
+    }
+    
     setListening(false)
     setTranscript('')
   }
@@ -222,7 +306,7 @@ export default function VoiceController({ onResult, onSpeakRequest }: Props) {
           className="text-center"
         >
           {listening ? (
-            <div className="flex items-center justify-center gap-2 text-wrench-accent">
+            <div className="flex flex-col items-center justify-center gap-1 text-wrench-accent">
               <motion.div
                 animate={{ opacity: [1, 0.5, 1] }}
                 transition={{ duration: 1, repeat: Infinity }}
@@ -231,6 +315,7 @@ export default function VoiceController({ onResult, onSpeakRequest }: Props) {
                 <Flame className="w-5 h-5" />
                 <span className="text-lg font-semibold">Listening...</span>
               </motion.div>
+              <p className="text-xs text-wrench-text-muted">Take your time, I'll wait for you to finish</p>
             </div>
           ) : (
             <p className="text-wrench-text-secondary font-medium">Tap to speak</p>
