@@ -2,7 +2,7 @@
 import React, { forwardRef } from 'react'
 import { motion, HTMLMotionProps } from 'framer-motion'
 
-type InputProps = Omit<HTMLMotionProps<'input'>, 'onDrag' | 'onDragStart' | 'onDragEnd'> & {
+type InputProps = Omit<HTMLMotionProps<'input'>, 'onDrag' | 'onDragStart' | 'onDragEnd' | 'size'> & {
   icon?: React.ReactNode
   iconRight?: React.ReactNode
   error?: string
