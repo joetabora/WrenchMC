@@ -28,21 +28,6 @@ export async function getUserBikeProfile(): Promise<BikeProfile | null> {
       return null
     }
 
-    // Try to get activeBikeId separately (column might not exist if migration hasn't run)
-    let activeBikeId: string | null = null
-    try {
-      const profileWithActiveBike = await prisma.userProfile.findUnique({
-        where: { userId: session.user.id },
-        select: {
-          activeBikeId: true,
-        },
-      })
-      activeBikeId = (profileWithActiveBike as any)?.activeBikeId || null
-    } catch (error) {
-      // activeBikeId column might not exist yet - that's okay
-      console.warn('activeBikeId column not available:', error)
-    }
-
     // Garage feature temporarily disabled - skip activeBikeId logic
 
     // Fallback to profile bike fields for backward compatibility
