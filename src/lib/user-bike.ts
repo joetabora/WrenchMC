@@ -47,7 +47,7 @@ export async function getUserBikeProfile(): Promise<BikeProfile | null> {
     if (activeBikeId) {
       try {
         const activeBike = await prisma.garage.findUnique({
-          where: { id: profile.activeBikeId },
+          where: { id: activeBikeId },
           select: {
             bikeYear: true,
             bikeModel: true,
