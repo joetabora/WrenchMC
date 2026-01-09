@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import Button from '@/components/ui/Button'
 import Card from '@/components/ui/Card'
 import Input from '@/components/ui/Input'
+import ImageUpload from '@/components/ImageUpload'
 import { Plus, Bike, CheckCircle, AlertCircle, ChevronDown, Trash2, Star, StarOff } from 'lucide-react'
 import { HARLEY_YEARS, HARLEY_MODELS, getVariantsForModel } from '@/lib/harley-models'
 
@@ -14,6 +15,7 @@ interface GarageBike {
   bikeYear?: string | null
   bikeModel?: string | null
   bikeVariant?: string | null
+  image?: string | null
   isActive: boolean
 }
 
@@ -30,6 +32,7 @@ export default function Garage({ onChange }: { onChange?: (activeBike: GarageBik
   const [year, setYear] = useState('')
   const [model, setModel] = useState('')
   const [variant, setVariant] = useState('')
+  const [bikeImage, setBikeImage] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const [variants, setVariants] = useState<string[]>([])
@@ -98,6 +101,7 @@ export default function Garage({ onChange }: { onChange?: (activeBike: GarageBik
     setYear('')
     setModel('')
     setVariant('')
+    setBikeImage(null)
     setEditingBike(null)
     setShowAddForm(false)
     setMessage(null)
@@ -114,13 +118,14 @@ export default function Garage({ onChange }: { onChange?: (activeBike: GarageBik
     setMessage(null)
 
     try {
-      const bikeData = {
-        id: editingBike?.id,
-        nickname: nickname || null,
-        bike_year: year || null,
-        bike_model: model || null,
-        bike_variant: variant || null,
-      }
+    const bikeData = {
+      id: editingBike?.id,
+      nickname: nickname || null,
+      bike_year: year || null,
+      bike_model: model || null,
+      bike_variant: variant || null,
+      bike_image: bikeImage || null,
+    }
 
       const res = await fetch('/api/profile/garage', {
         method: editingBike ? 'PUT' : 'POST',
@@ -194,7 +199,16 @@ export default function Garage({ onChange }: { onChange?: (activeBike: GarageBik
     setYear(bike.bikeYear || '')
     setModel(bike.bikeModel || '')
     setVariant(bike.bikeVariant || '')
+    setBikeImage(bike.image || null)
     setShowAddForm(true)
+  }
+
+  async function handleBikeImageUpload(url: string) {
+    setBikeImage(url)
+  }
+
+  async function handleBikeImageRemove() {
+    setBikeImage(null)
   }
 
   const selectClasses = `
@@ -288,6 +302,25 @@ export default function Garage({ onChange }: { onChange?: (activeBike: GarageBik
           >
             <Card padding="md">
               <form onSubmit={saveBike} className="space-y-4">
+                {/* Bike Image Upload */}
+                <div>
+                  <label className="block text-sm font-medium text-wrench-text-secondary mb-2">
+                    Bike Image (optional)
+                  </label>
+                  <div className="flex items-center gap-4">
+                    <ImageUpload
+                      currentImage={bikeImage}
+                      onUpload={handleBikeImageUpload}
+                      onRemove={handleBikeImageRemove}
+                      type="bike"
+                      size="md"
+                    />
+                    <p className="text-xs text-wrench-text-muted">
+                      Click to upload or change image
+                    </p>
+                  </div>
+                </div>
+
                 <div>
                   <label className="block text-sm font-medium text-wrench-text-secondary mb-2">
                     Nickname (optional)

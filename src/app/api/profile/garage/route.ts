@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { nickname, bike_year, bike_model, bike_variant } = body
+    const { nickname, bike_year, bike_model, bike_variant, bike_image } = body
 
     // If this is the first bike, make it active
     const existingBikes = await prisma.garage.count({
@@ -50,6 +50,7 @@ export async function POST(request: NextRequest) {
         bikeYear: bike_year || null,
         bikeModel: bike_model || null,
         bikeVariant: bike_variant || null,
+        image: bike_image || null,
         isActive: existingBikes === 0, // First bike is active by default
       },
     })
@@ -79,7 +80,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { id, nickname, bike_year, bike_model, bike_variant } = body
+    const { id, nickname, bike_year, bike_model, bike_variant, bike_image } = body
 
     if (!id) {
       return NextResponse.json({ error: 'Bike ID required' }, { status: 400 })
@@ -101,6 +102,7 @@ export async function PUT(request: NextRequest) {
         bikeYear: bike_year !== undefined ? (bike_year || null) : undefined,
         bikeModel: bike_model !== undefined ? (bike_model || null) : undefined,
         bikeVariant: bike_variant !== undefined ? (bike_variant || null) : undefined,
+        image: bike_image !== undefined ? (bike_image || null) : undefined,
       },
     })
 

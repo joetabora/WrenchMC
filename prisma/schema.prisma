@@ -79,6 +79,7 @@ model UserProfile {
   bikeModel   String?
   bikeVariant String?
   activeBikeId String? // ID of the currently active bike from Garage
+  profileImage String? // URL to profile image
   bio         String?  @db.Text
   location    String?
   createdAt   DateTime @default(now())
@@ -94,6 +95,7 @@ model Garage {
   bikeYear    String?
   bikeModel   String?
   bikeVariant String?
+  image       String?  // URL to bike image
   isActive    Boolean  @default(false) // Currently selected bike
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

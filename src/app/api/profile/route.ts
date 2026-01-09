@@ -55,6 +55,7 @@ export async function GET(request: NextRequest) {
         bike_model: activeBike?.bikeModel || profile.bikeModel,
         bike_variant: activeBike?.bikeVariant || profile.bikeVariant,
         activeBikeId: profile.activeBikeId || null,
+        profile_image: profile.profileImage || null,
       }
     })
   } catch (error: any) {
@@ -73,7 +74,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { bike_year, bike_model, bike_variant, name } = body
+    const { bike_year, bike_model, bike_variant, name, profile_image } = body
 
     // Update user name if provided
     if (name !== undefined) {
@@ -87,15 +88,17 @@ export async function POST(request: NextRequest) {
     const profile = await prisma.userProfile.upsert({
       where: { userId: session.user.id },
       update: {
-        bikeYear: bike_year || null,
-        bikeModel: bike_model || null,
-        bikeVariant: bike_variant || null,
+        bikeYear: bike_year !== undefined ? (bike_year || null) : undefined,
+        bikeModel: bike_model !== undefined ? (bike_model || null) : undefined,
+        bikeVariant: bike_variant !== undefined ? (bike_variant || null) : undefined,
+        profileImage: profile_image !== undefined ? (profile_image || null) : undefined,
       },
       create: {
         userId: session.user.id,
         bikeYear: bike_year || null,
         bikeModel: bike_model || null,
         bikeVariant: bike_variant || null,
+        profileImage: profile_image || null,
       },
     })
 

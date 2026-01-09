@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react'
 
 export const dynamic = 'force-dynamic'
 import Garage from '@/components/Garage'
+import ImageUpload from '@/components/ImageUpload'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
@@ -17,9 +18,11 @@ export default function ProfilePage() {
   const user = session?.user
   const router = useRouter()
   const [profile, setProfile] = useState<any>(null)
+  const [profileImage, setProfileImage] = useState<string | null>(null)
   const [userName, setUserName] = useState(user?.name || '')
   const [savingName, setSavingName] = useState(false)
   const [nameMessage, setNameMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+  const [savingImage, setSavingImage] = useState(false)
 
   useEffect(() => {
     if (status === 'loading') {
@@ -34,8 +37,74 @@ export default function ProfilePage() {
       }
     } else if (status === 'authenticated' && user) {
       setUserName(user.name || '')
+      loadProfile()
     }
   }, [status, user, router])
+
+  async function loadProfile() {
+    if (!user) return
+    
+    try {
+      const res = await fetch('/api/profile', {
+        credentials: 'include',
+      })
+      if (res.ok) {
+        const { profile } = await res.json()
+        setProfileImage(profile.profile_image || null)
+      }
+    } catch (error) {
+      console.error('Error loading profile:', error)
+    }
+  }
+
+  async function handleImageUpload(url: string) {
+    if (!user) return
+    
+    setSavingImage(true)
+    try {
+      const res = await fetch('/api/profile', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ profile_image: url }),
+      })
+
+      if (res.ok) {
+        setProfileImage(url)
+      } else {
+        const { error } = await res.json()
+        alert(error || 'Failed to save image')
+      }
+    } catch (error: any) {
+      alert(error.message || 'Failed to save image')
+    } finally {
+      setSavingImage(false)
+    }
+  }
+
+  async function handleImageRemove() {
+    if (!user) return
+    
+    setSavingImage(true)
+    try {
+      const res = await fetch('/api/profile', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ profile_image: null }),
+      })
+
+      if (res.ok) {
+        setProfileImage(null)
+      }
+    } catch (error: any) {
+      alert(error.message || 'Failed to remove image')
+    } finally {
+      setSavingImage(false)
+    }
+  }
 
   async function handleUpdateName(e: React.FormEvent) {
     e.preventDefault()
@@ -96,11 +165,16 @@ export default function ProfilePage() {
             animate={{ opacity: 1, y: 0 }}
             className="text-center"
           >
-            {/* Avatar */}
+            {/* Avatar with Image Upload */}
             <div className="relative inline-block mb-4">
-              <div className="avatar w-24 h-24 sm:w-28 sm:h-28 flex items-center justify-center bg-gradient-flame">
-                <User className="w-10 h-10 sm:w-12 sm:h-12 text-white" />
-              </div>
+              <ImageUpload
+                currentImage={profileImage}
+                onUpload={handleImageUpload}
+                onRemove={handleImageRemove}
+                type="profile"
+                size="lg"
+                className="mx-auto"
+              />
               <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-wrench-surface border-2 border-wrench-accent flex items-center justify-center">
                 <Bike className="w-4 h-4 text-wrench-accent" />
               </div>
