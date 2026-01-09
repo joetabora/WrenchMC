@@ -26,11 +26,17 @@ export async function GET(request: NextRequest) {
     }
 
     // Get active bike from garage if available
-    let activeBike = null
+    let activeBike: { bikeYear: string | null; bikeModel: string | null; bikeVariant: string | null } | null = null
     if (profile.activeBikeId) {
-      activeBike = await prisma.garage.findUnique({
+      const bike = await prisma.garage.findUnique({
         where: { id: profile.activeBikeId },
+        select: {
+          bikeYear: true,
+          bikeModel: true,
+          bikeVariant: true,
+        },
       })
+      activeBike = bike
     }
 
     // Fallback to profile bike fields for backward compatibility
