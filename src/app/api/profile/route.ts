@@ -25,11 +25,21 @@ export async function GET(request: NextRequest) {
       })
     }
 
+    // Get active bike from garage if available
+    let activeBike = null
+    if (profile.activeBikeId) {
+      activeBike = await prisma.garage.findUnique({
+        where: { id: profile.activeBikeId },
+      })
+    }
+
+    // Fallback to profile bike fields for backward compatibility
     return NextResponse.json({ 
       profile: {
-        bike_year: profile.bikeYear,
-        bike_model: profile.bikeModel,
-        bike_variant: profile.bikeVariant,
+        bike_year: activeBike?.bikeYear || profile.bikeYear,
+        bike_model: activeBike?.bikeModel || profile.bikeModel,
+        bike_variant: activeBike?.bikeVariant || profile.bikeVariant,
+        activeBikeId: profile.activeBikeId,
       }
     })
   } catch (error: any) {

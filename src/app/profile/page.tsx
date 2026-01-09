@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react'
 
 export const dynamic = 'force-dynamic'
 import BikeSelector from '@/components/BikeSelector'
+import Garage from '@/components/Garage'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
@@ -200,15 +201,37 @@ export default function ProfilePage() {
           </form>
         </Card>
 
-        {/* Bike Profile */}
+        {/* Garage */}
         <Card padding="lg">
           <div className="flex items-center gap-3 mb-5">
             <div className="w-10 h-10 rounded-xl bg-wrench-accent/15 flex items-center justify-center">
               <Bike className="w-5 h-5 text-wrench-accent" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-wrench-text-primary">My Bike</h2>
-              <p className="text-xs text-wrench-text-muted">Used for personalized results</p>
+              <h2 className="text-lg font-bold text-wrench-text-primary">Garage</h2>
+              <p className="text-xs text-wrench-text-muted">Manage your bikes and select the active one</p>
+            </div>
+          </div>
+          <Garage onChange={(activeBike) => {
+            if (activeBike) {
+              setProfile({
+                year: activeBike.bikeYear,
+                model: activeBike.bikeModel,
+                variant: activeBike.bikeVariant,
+              })
+            }
+          }} />
+        </Card>
+
+        {/* Legacy Bike Profile - Keep for backward compatibility */}
+        <Card padding="lg" className="opacity-60">
+          <div className="flex items-center gap-3 mb-5">
+            <div className="w-10 h-10 rounded-xl bg-wrench-accent/15 flex items-center justify-center">
+              <Bike className="w-5 h-5 text-wrench-accent" />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-wrench-text-primary">Legacy Bike Profile</h2>
+              <p className="text-xs text-wrench-text-muted">Use Garage above instead</p>
             </div>
           </div>
           <BikeSelector onChange={(bike) => setProfile(bike)} />

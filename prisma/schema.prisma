@@ -50,6 +50,7 @@ model User {
   accounts      Account[]
   sessions      Session[]
   profile       UserProfile?
+  garage        Garage[]
   specs         Spec[]
   votes         SpecVote[]
   posts         ForumPost[]
@@ -77,10 +78,28 @@ model UserProfile {
   bikeYear    String?
   bikeModel   String?
   bikeVariant String?
+  activeBikeId String? // ID of the currently active bike from Garage
   bio         String?  @db.Text
   location    String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+// User's garage - multiple bikes
+model Garage {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  nickname    String?  // e.g., "My Road King", "Project Bike"
+  bikeYear    String?
+  bikeModel   String?
+  bikeVariant String?
+  isActive    Boolean  @default(false) // Currently selected bike
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+  @@index([userId, isActive])
 }
 
 // Harley models catalog

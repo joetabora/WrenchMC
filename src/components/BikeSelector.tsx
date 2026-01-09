@@ -4,10 +4,7 @@ import { useSession } from 'next-auth/react'
 import { motion } from 'framer-motion'
 import Button from '@/components/ui/Button'
 import { Save, CheckCircle, AlertCircle, ChevronDown } from 'lucide-react'
-
-const YEARS = Array.from({ length: 30 }, (_, i) => String(1995 + i))
-const MODELS = ['Softail', 'Sportster', 'Dyna', 'Road King', 'Street Glide', 'Fat Boy', 'Heritage Classic', 'Low Rider', 'Electra Glide', 'Road Glide']
-const VARIANTS = ['Standard', 'Custom', 'Limited', 'Special', 'Deluxe']
+import { HARLEY_YEARS, HARLEY_MODELS, getVariantsForModel } from '@/lib/harley-models'
 
 export default function BikeSelector({ onChange }: { onChange?: (v: any) => void }) {
   const { data: session } = useSession()
@@ -18,6 +15,19 @@ export default function BikeSelector({ onChange }: { onChange?: (v: any) => void
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+  const [variants, setVariants] = useState<string[]>([])
+
+  useEffect(() => {
+    if (model) {
+      setVariants(getVariantsForModel(model))
+      if (!getVariantsForModel(model).includes(variant)) {
+        setVariant('')
+      }
+    } else {
+      setVariants([])
+      setVariant('')
+    }
+  }, [model, variant])
 
   useEffect(() => {
     if (user) {
@@ -136,7 +146,7 @@ export default function BikeSelector({ onChange }: { onChange?: (v: any) => void
             style={{ fontSize: '16px' }}
           >
             <option value="">Select year</option>
-            {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
+            {HARLEY_YEARS.map(y => <option key={y} value={y}>{y}</option>)}
           </select>
           <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-wrench-text-muted pointer-events-none" />
         </div>
@@ -153,28 +163,30 @@ export default function BikeSelector({ onChange }: { onChange?: (v: any) => void
             style={{ fontSize: '16px' }}
           >
             <option value="">Select model</option>
-            {MODELS.map(m => <option key={m} value={m}>{m}</option>)}
+            {HARLEY_MODELS.map(m => <option key={m} value={m}>{m}</option>)}
           </select>
           <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-wrench-text-muted pointer-events-none" />
         </div>
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-wrench-text-secondary mb-2">Variant</label>
-        <div className="relative">
-          <select 
-            name="variant" 
-            value={variant}
-            onChange={(e) => setVariant(e.target.value)}
-            className={selectClasses}
-            style={{ fontSize: '16px' }}
-          >
-            <option value="">Select variant</option>
-            {VARIANTS.map(v => <option key={v} value={v}>{v}</option>)}
-          </select>
-          <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-wrench-text-muted pointer-events-none" />
+      {variants.length > 0 && (
+        <div>
+          <label className="block text-sm font-medium text-wrench-text-secondary mb-2">Variant</label>
+          <div className="relative">
+            <select 
+              name="variant" 
+              value={variant}
+              onChange={(e) => setVariant(e.target.value)}
+              className={selectClasses}
+              style={{ fontSize: '16px' }}
+            >
+              <option value="">Select variant</option>
+              {variants.map(v => <option key={v} value={v}>{v}</option>)}
+            </select>
+            <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-wrench-text-muted pointer-events-none" />
+          </div>
         </div>
-      </div>
+      )}
 
       {message && (
         <motion.div 
