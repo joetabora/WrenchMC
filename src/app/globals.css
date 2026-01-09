@@ -14,6 +14,8 @@
     @apply scroll-smooth;
     -webkit-tap-highlight-color: transparent;
     -webkit-touch-callout: none;
+    overflow-x: hidden;
+    max-width: 100vw;
   }
   
   body {
@@ -25,6 +27,8 @@
     font-family: var(--font-sf);
     /* Add safe area padding for notched devices */
     padding-bottom: var(--safe-area-bottom);
+    overflow-x: hidden;
+    max-width: 100vw;
   }
   
   /* Apple-style focus styles */
@@ -218,18 +222,27 @@
 
   /* Page container with safe areas */
   .page-container {
-    @apply min-h-screen pb-nav;
+    @apply min-h-screen pb-nav overflow-x-hidden;
     padding-top: var(--safe-area-top);
+    max-width: 100vw;
   }
 
   /* Swipeable carousel */
   .swipe-carousel {
     @apply flex gap-4 overflow-x-auto snap-x snap-mandatory hide-scrollbar;
     -webkit-overflow-scrolling: touch;
+    scroll-padding-left: 1rem;
+    scroll-padding-right: 1rem;
   }
 
   .swipe-carousel > * {
     @apply snap-center flex-shrink-0;
+  }
+  
+  /* Container for swipe carousel to handle negative margins */
+  .swipe-container {
+    @apply overflow-x-hidden;
+    width: 100%;
   }
 
   /* Touch-friendly tap target */

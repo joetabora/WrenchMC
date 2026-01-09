@@ -197,7 +197,7 @@ function AskPageContent() {
         </form>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 py-6">
+      <div className="max-w-4xl mx-auto px-4 py-6 overflow-x-hidden">
         {/* Recent Queries */}
         {recentQueries.length > 0 && !response && !loading && (
           <motion.div
@@ -369,7 +369,7 @@ function AskPageContent() {
 
               {/* YouTube Videos - Swipeable on mobile */}
               {response.youtubeVideos.length > 0 && (
-                <div>
+                <div className="overflow-x-hidden">
                   <h2 className="flex items-center gap-2 text-lg font-bold text-wrench-text-primary mb-4">
                     <Youtube className="w-5 h-5 text-wrench-accent" />
                     Video Tutorials ({response.youtubeVideos.length})

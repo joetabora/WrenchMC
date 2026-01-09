@@ -55,11 +55,11 @@ export default function Home() {
   return (
     <div className="page-container">
       {/* Hero Section */}
-      <section className="hero-section px-4 py-16 sm:py-24">
+      <section className="hero-section px-4 py-16 sm:py-24 overflow-hidden">
         {/* Animated flame gradient background */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <motion.div
-            className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] rounded-full"
+            className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-[800px] h-[600px] rounded-full"
             style={{
               background: 'radial-gradient(ellipse at center, rgba(255,69,0,0.2) 0%, transparent 60%)',
               filter: 'blur(80px)',
@@ -126,7 +126,7 @@ export default function Home() {
                   onBlur={() => setIsFocused(false)}
                   placeholder="Torque for 2005 Road King transmission?"
                   className="
-                    w-full pl-14 pr-32 sm:pr-36 py-5 sm:py-6
+                    w-full pl-14 pr-20 sm:pr-36 py-5 sm:py-6
                     bg-wrench-light/60 backdrop-blur-xl
                     border border-glass-border
                     text-wrench-text-primary placeholder:text-wrench-text-muted
@@ -175,13 +175,13 @@ export default function Home() {
       </section>
 
       {/* Quick Queries - Horizontal scroll on mobile */}
-      <section className="px-4 py-8">
+      <section className="px-4 py-8 overflow-x-hidden">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-lg font-semibold text-wrench-text-primary mb-4 flex items-center gap-2">
             <Zap className="w-5 h-5 text-wrench-accent" />
             Quick Questions
           </h2>
-          <div className="swipe-carousel pb-4">
+          <div className="swipe-carousel pb-4 -mx-4 px-4">
             {quickQueries.map((q, i) => (
               <motion.button
                 key={i}

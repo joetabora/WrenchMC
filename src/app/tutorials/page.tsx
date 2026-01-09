@@ -90,7 +90,7 @@ export default function TutorialsPage() {
       </section>
 
       {/* Search - Sticky */}
-      <div className="sticky top-[52px] lg:top-[73px] z-30 px-4 py-3 bg-wrench/90 backdrop-blur-xl border-b border-glass-border">
+      <div className="sticky top-[52px] lg:top-[73px] z-30 px-4 py-3 bg-wrench/90 backdrop-blur-xl border-b border-glass-border overflow-x-hidden">
         <div className="max-w-6xl mx-auto">
           <form
             onSubmit={(e) => {
@@ -99,7 +99,7 @@ export default function TutorialsPage() {
             }}
             className="flex gap-2"
           >
-            <div className="relative flex-1">
+            <div className="relative flex-1 min-w-0">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-wrench-text-muted" />
               <input
                 value={searchQuery}
@@ -109,7 +109,7 @@ export default function TutorialsPage() {
                 style={{ fontSize: '16px' }}
               />
             </div>
-            <Button type="submit" isLoading={loading} variant="flame">
+            <Button type="submit" isLoading={loading} variant="flame" className="flex-shrink-0">
               <Search className="w-5 h-5" />
             </Button>
           </form>
@@ -133,7 +133,7 @@ export default function TutorialsPage() {
       </div>
 
       {/* Content */}
-      <div className="max-w-6xl mx-auto px-4 py-6">
+      <div className="max-w-6xl mx-auto px-4 py-6 overflow-x-hidden">
         {/* Video Modal */}
         <AnimatePresence>
           {selectedVideo && (
