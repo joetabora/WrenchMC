@@ -84,15 +84,17 @@ export async function POST(request: NextRequest) {
       })
     }
 
+    // Build update object only with provided fields
+    const updateData: any = {}
+    if (bike_year !== undefined) updateData.bikeYear = bike_year || null
+    if (bike_model !== undefined) updateData.bikeModel = bike_model || null
+    if (bike_variant !== undefined) updateData.bikeVariant = bike_variant || null
+    if (profile_image !== undefined) updateData.profileImage = profile_image || null
+
     // Upsert bike profile
     const profile = await prisma.userProfile.upsert({
       where: { userId: session.user.id },
-      update: {
-        bikeYear: bike_year !== undefined ? (bike_year || null) : undefined,
-        bikeModel: bike_model !== undefined ? (bike_model || null) : undefined,
-        bikeVariant: bike_variant !== undefined ? (bike_variant || null) : undefined,
-        profileImage: profile_image !== undefined ? (profile_image || null) : undefined,
-      },
+      update: updateData,
       create: {
         userId: session.user.id,
         bikeYear: bike_year || null,
