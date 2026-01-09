@@ -12,41 +12,37 @@ export async function GET(request: NextRequest) {
     }
 
     // Get or create user profile
-    // Gracefully handle if activeBikeId column or Garage table don't exist yet (migration not run)
+    // Always use explicit select to avoid issues if activeBikeId column doesn't exist yet
     let profile: any
     let activeBikeId: string | null = null
     
+    // First, get basic profile fields that definitely exist
+    profile = await prisma.userProfile.findUnique({
+      where: { userId: session.user.id },
+      select: {
+        bikeYear: true,
+        bikeModel: true,
+        bikeVariant: true,
+      },
+    })
+    
+    // Try to get activeBikeId separately (column might not exist if migration hasn't run)
     try {
-      profile = await prisma.userProfile.findUnique({
+      const profileWithActiveBike = await prisma.userProfile.findUnique({
         where: { userId: session.user.id },
+        select: {
+          activeBikeId: true,
+        },
       })
-      
-      // Try to access activeBikeId safely (column might not exist if migration hasn't run)
-      // Use type assertion to avoid TypeScript errors, but handle runtime errors
-      try {
-        activeBikeId = (profile as any)?.activeBikeId || null
-      } catch {
-        activeBikeId = null
-      }
+      activeBikeId = (profileWithActiveBike as any)?.activeBikeId || null
     } catch (error: any) {
-      // If query fails due to schema mismatch, try with explicit column selection
+      // activeBikeId column doesn't exist yet - that's okay
       if (error?.message?.includes('does not exist') || error?.message?.includes('column') || error?.code === 'P2021') {
-        console.warn('Schema mismatch detected, using basic profile query:', error.message)
-        try {
-          profile = await prisma.userProfile.findUnique({
-            where: { userId: session.user.id },
-            select: {
-              bikeYear: true,
-              bikeModel: true,
-              bikeVariant: true,
-            },
-          })
-        } catch (retryError) {
-          // If that also fails, return error
-          throw retryError
-        }
+        activeBikeId = null
       } else {
-        throw error
+        // Some other error - log it but continue
+        console.warn('Error checking activeBikeId:', error)
+        activeBikeId = null
       }
     }
 

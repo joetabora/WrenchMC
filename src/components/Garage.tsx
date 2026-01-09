@@ -18,7 +18,7 @@ interface GarageBike {
 }
 
 export default function Garage({ onChange }: { onChange?: (activeBike: GarageBike | null) => void }) {
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
   const user = session?.user
   const [bikes, setBikes] = useState<GarageBike[]>([])
   const [loading, setLoading] = useState(false)
@@ -35,10 +35,10 @@ export default function Garage({ onChange }: { onChange?: (activeBike: GarageBik
   const [variants, setVariants] = useState<string[]>([])
 
   useEffect(() => {
-    if (user) {
+    if (user && status === 'authenticated') {
       loadGarage()
     }
-  }, [user])
+  }, [user, status])
 
   useEffect(() => {
     if (model) {
