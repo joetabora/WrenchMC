@@ -51,7 +51,7 @@ export default function Button({
           animate={{ opacity: 1 }}
         >
           <motion.div
-            className="w-6 h-6 border-3 border-wrench-chrome-bright border-t-transparent rounded-full"
+            className="w-6 h-6 border-3 border-white border-t-transparent rounded-full"
             animate={{ rotate: 360 }}
             transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
           />

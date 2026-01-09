@@ -27,9 +27,10 @@ export default function ProfilePage() {
       return // Still loading, don't do anything
     }
     
-    // Only redirect if definitely unauthenticated
+    // Only redirect if definitely unauthenticated - use window.location to avoid loop
     if (status === 'unauthenticated') {
-      router.push('/auth/login')
+      window.location.href = '/auth/login?callbackUrl=' + encodeURIComponent('/profile')
+      return
     } else if (status === 'authenticated' && user) {
       setUserName(user.name || '')
     }
@@ -70,7 +71,7 @@ export default function ProfilePage() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <p className="text-gray-400 mb-4">Redirecting to login...</p>
+          <p className="text-wrench-text-muted mb-4">Redirecting to login...</p>
         </div>
       </div>
     )
@@ -91,7 +92,7 @@ export default function ProfilePage() {
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-2 sm:mb-4">
             Your <span className="gradient-text">Profile</span>
           </h1>
-          <p className="text-base sm:text-xl text-gray-400">
+          <p className="text-base sm:text-xl text-wrench-text-secondary">
             Manage your account and bike information
           </p>
         </motion.div>
@@ -107,7 +108,7 @@ export default function ProfilePage() {
             </div>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-wrench-text-secondary mb-2">
                   <UserCircle className="w-4 h-4 inline mr-2" />
                   Display Name
                 </label>
@@ -148,12 +149,12 @@ export default function ProfilePage() {
                 )}
               </div>
               <div>
-                <p className="text-sm text-gray-500 mb-1">Email</p>
-                <p className="text-gray-200 font-medium text-sm sm:text-base">{user.email || 'N/A'}</p>
+                <p className="text-sm text-wrench-text-muted mb-1">Email</p>
+                <p className="text-wrench-text-primary font-medium text-sm sm:text-base">{user.email || 'N/A'}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-500 mb-1">User ID</p>
-                <p className="text-gray-400 text-xs font-mono break-all">{(user as any)?.id || 'N/A'}</p>
+                <p className="text-sm text-wrench-text-muted mb-1">User ID</p>
+                <p className="text-wrench-text-secondary text-xs font-mono break-all">{(user as any)?.id || 'N/A'}</p>
               </div>
               <Button
                 variant="outline"
@@ -177,7 +178,7 @@ export default function ProfilePage() {
               </div>
               <h2 className="text-xl font-bold">My Bike</h2>
             </div>
-            <p className="text-sm text-gray-400 mb-4">
+            <p className="text-sm text-wrench-text-secondary mb-4">
               Save your primary bike to filter searches and use voice queries hands-free.
             </p>
             <BikeSelector onChange={(bike) => setProfile(bike)} />
@@ -193,7 +194,7 @@ export default function ProfilePage() {
         >
           <Card className="border-wrench-accent/30">
             <h3 className="text-lg font-bold mb-2">Why save your bike?</h3>
-            <ul className="space-y-2 text-sm text-gray-400">
+            <ul className="space-y-2 text-sm text-wrench-text-secondary">
               <li className="flex items-start gap-2">
                 <span className="text-wrench-accent mt-1">•</span>
                 <span>Get personalized search results filtered for your bike</span>

@@ -23,9 +23,15 @@ function LoginForm() {
 
   // Redirect if already logged in
   useEffect(() => {
+    if (status === 'loading') {
+      return // Wait for status to be determined
+    }
     if (status === 'authenticated' && session?.user) {
       const callbackUrl = searchParams.get('callbackUrl') || '/profile'
-      router.push(callbackUrl)
+      // Use setTimeout to avoid conflicts with other state updates
+      setTimeout(() => {
+        window.location.href = callbackUrl
+      }, 100)
     }
   }, [status, session, router, searchParams])
 
@@ -95,10 +101,10 @@ function LoginForm() {
               <LogIn className="w-8 h-8 text-wrench-accent" />
             )}
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 text-wrench-chrome">
+          <h1 className="text-4xl md:text-5xl font-bold mb-4 text-wrench-text-primary">
             {isSignUp ? 'Create Account' : 'Welcome Back'}
           </h1>
-          <p className="text-xl text-wrench-chrome-dark">
+          <p className="text-xl text-wrench-text-secondary">
             {isSignUp ? 'Join the WrenchMC Goliath community' : 'Sign in to your account'}
           </p>
         </motion.div>
@@ -106,8 +112,8 @@ function LoginForm() {
         <Card>
           <form onSubmit={handleSignIn} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-wrench-chrome-dark mb-2">
-                <Mail className="w-4 h-4 inline mr-2 text-wrench-chrome-dark" />
+              <label className="block text-sm font-medium text-wrench-text-secondary mb-2">
+                <Mail className="w-4 h-4 inline mr-2 text-wrench-text-muted" />
                 Email
               </label>
               <Input
@@ -120,8 +126,8 @@ function LoginForm() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-wrench-chrome-dark mb-2">
-                <Lock className="w-4 h-4 inline mr-2 text-wrench-chrome-dark" />
+              <label className="block text-sm font-medium text-wrench-text-secondary mb-2">
+                <Lock className="w-4 h-4 inline mr-2 text-wrench-text-muted" />
                 Password
               </label>
               <Input
@@ -193,16 +199,16 @@ function LoginForm() {
           </form>
 
           <div className="relative flex items-center py-5">
-            <div className="flex-grow border-t border-wrench-chrome-dark/20"></div>
-            <span className="flex-shrink mx-4 text-wrench-chrome-dark text-sm">OR</span>
-            <div className="flex-grow border-t border-wrench-chrome-dark/20"></div>
+            <div className="flex-grow border-t border-white/10"></div>
+            <span className="flex-shrink mx-4 text-wrench-text-muted text-sm">OR</span>
+            <div className="flex-grow border-t border-white/10"></div>
           </div>
 
           <Button
             onClick={handleGoogleSignIn}
             isLoading={loading}
             variant="secondary"
-            className="w-full bg-wrench-chrome text-wrench-dark hover:bg-wrench-chrome-dark"
+            className="w-full"
             size="lg"
           >
             <Chrome className="w-5 h-5 inline mr-2" />
