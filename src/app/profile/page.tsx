@@ -184,27 +184,29 @@ export default function ProfilePage() {
           </form>
         </Card>
 
-        {/* Garage */}
-        <Card padding="lg">
-          <div className="flex items-center gap-3 mb-5">
-            <div className="w-10 h-10 rounded-xl bg-wrench-accent/15 flex items-center justify-center">
-              <Bike className="w-5 h-5 text-wrench-accent" />
+        {/* Garage - Temporarily disabled until migrations are run */}
+        {false && (
+          <Card padding="lg">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-10 h-10 rounded-xl bg-wrench-accent/15 flex items-center justify-center">
+                <Bike className="w-5 h-5 text-wrench-accent" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-wrench-text-primary">Garage</h2>
+                <p className="text-xs text-wrench-text-muted">Manage your bikes and select the active one</p>
+              </div>
             </div>
-            <div>
-              <h2 className="text-lg font-bold text-wrench-text-primary">Garage</h2>
-              <p className="text-xs text-wrench-text-muted">Manage your bikes and select the active one</p>
-            </div>
-          </div>
-          <Garage onChange={(activeBike) => {
-            if (activeBike) {
-              setProfile({
-                year: activeBike.bikeYear,
-                model: activeBike.bikeModel,
-                variant: activeBike.bikeVariant,
-              })
-            }
-          }} />
-        </Card>
+            <Garage onChange={(activeBike) => {
+              if (activeBike) {
+                setProfile({
+                  year: activeBike.bikeYear,
+                  model: activeBike.bikeModel,
+                  variant: activeBike.bikeVariant,
+                })
+              }
+            }} />
+          </Card>
+        )}
 
         {/* Legacy Bike Profile - Keep for backward compatibility */}
         <Card padding="lg" className="opacity-60">

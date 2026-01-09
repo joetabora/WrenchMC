@@ -17,6 +17,7 @@ export async function GET(request: NextRequest) {
     let activeBikeId: string | null = null
     
     // First, get basic profile fields that definitely exist
+    // Skip activeBikeId for now - it may not exist if migrations haven't run
     profile = await prisma.userProfile.findUnique({
       where: { userId: session.user.id },
       select: {
@@ -26,25 +27,8 @@ export async function GET(request: NextRequest) {
       },
     })
     
-    // Try to get activeBikeId separately (column might not exist if migration hasn't run)
-    try {
-      const profileWithActiveBike = await prisma.userProfile.findUnique({
-        where: { userId: session.user.id },
-        select: {
-          activeBikeId: true,
-        },
-      })
-      activeBikeId = (profileWithActiveBike as any)?.activeBikeId || null
-    } catch (error: any) {
-      // activeBikeId column doesn't exist yet - that's okay
-      if (error?.message?.includes('does not exist') || error?.message?.includes('column') || error?.code === 'P2021') {
-        activeBikeId = null
-      } else {
-        // Some other error - log it but continue
-        console.warn('Error checking activeBikeId:', error)
-        activeBikeId = null
-      }
-    }
+    // Skip activeBikeId query entirely - Garage feature disabled until migrations run
+    activeBikeId = null
 
     if (!profile) {
       // Create profile if it doesn't exist
