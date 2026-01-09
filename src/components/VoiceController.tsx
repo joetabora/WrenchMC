@@ -82,7 +82,8 @@ export default function VoiceController({ onResult, onSpeakRequest }: Props) {
       
       if (ev.results[0].isFinal) {
         onResult?.(text)
-        speakWithElevenLabs(`You asked: ${text}. Searching...`)
+        // Removed question verification announcement to prevent audio overlap
+        // The question is already displayed on screen
         setTranscript('')
       }
     }
