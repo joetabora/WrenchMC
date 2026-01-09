@@ -50,7 +50,7 @@ model User {
   accounts      Account[]
   sessions      Session[]
   profile       UserProfile?
-  garage        Garage[]
+  // garage        Garage[]  // Temporarily disabled until migrations run
   specs         Spec[]
   votes         SpecVote[]
   posts         ForumPost[]
@@ -78,7 +78,7 @@ model UserProfile {
   bikeYear    String?
   bikeModel   String?
   bikeVariant String?
-  activeBikeId String? // ID of the currently active bike from Garage
+  // activeBikeId String? // Temporarily disabled until migrations run
   bio         String?  @db.Text
   location    String?
   createdAt   DateTime @default(now())
@@ -86,21 +86,22 @@ model UserProfile {
 }
 
 // User's garage - multiple bikes
-model Garage {
-  id          String   @id @default(cuid())
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  nickname    String?  // e.g., "My Road King", "Project Bike"
-  bikeYear    String?
-  bikeModel   String?
-  bikeVariant String?
-  isActive    Boolean  @default(false) // Currently selected bike
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+// Temporarily disabled until migrations run
+// model Garage {
+//   id          String   @id @default(cuid())
+//   userId      String
+//   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+//   nickname    String?  // e.g., "My Road King", "Project Bike"
+//   bikeYear    String?
+//   bikeModel   String?
+//   bikeVariant String?
+//   isActive    Boolean  @default(false) // Currently selected bike
+//   createdAt   DateTime @default(now())
+//   updatedAt   DateTime @updatedAt
 
-  @@index([userId])
-  @@index([userId, isActive])
-}
+//   @@index([userId])
+//   @@index([userId, isActive])
+// }
 
 // Harley models catalog
 model HarleyModel {
