@@ -145,12 +145,14 @@
 
   /* Bottom navigation bar */
   .bottom-nav {
-    @apply fixed bottom-0 left-0 right-0 z-50;
+    @apply fixed left-0 right-0 z-50;
+    bottom: 0;
     background: linear-gradient(180deg, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.98) 100%);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border-top: 1px solid rgba(255, 255, 255, 0.08);
-    padding-bottom: var(--safe-area-bottom);
+    padding-bottom: env(safe-area-inset-bottom, 0);
+    margin: 0;
   }
 
   /* Nav item */
