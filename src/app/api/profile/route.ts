@@ -49,29 +49,8 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Get active bike from garage if available (gracefully handle if Garage table doesn't exist yet)
+    // Garage feature temporarily disabled - activeBikeId is null
     let activeBike: { bikeYear: string | null; bikeModel: string | null; bikeVariant: string | null } | null = null
-    if (activeBikeId) {
-      try {
-        const bike = await prisma.garage.findUnique({
-          where: { id: activeBikeId },
-          select: {
-            bikeYear: true,
-            bikeModel: true,
-            bikeVariant: true,
-          },
-        })
-        activeBike = bike
-      } catch (error: any) {
-        // Garage table might not exist yet (migration not run)
-        // Silently fall back to profile bike fields
-        if (error?.message?.includes('does not exist') || error?.message?.includes('relation') || error?.message?.includes('table') || error?.code === 'P2021') {
-          console.warn('Garage feature not available yet - migration may need to be run')
-        } else {
-          console.warn('Error loading active bike from garage:', error)
-        }
-      }
-    }
 
     // Fallback to profile bike fields for backward compatibility
     return NextResponse.json({ 
