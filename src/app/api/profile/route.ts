@@ -49,16 +49,13 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Garage feature temporarily disabled - activeBikeId is null
-    let activeBike: { bikeYear: string | null; bikeModel: string | null; bikeVariant: string | null } | null = null
-
-    // Fallback to profile bike fields for backward compatibility
+    // Garage feature temporarily disabled - return basic profile fields only
     return NextResponse.json({ 
       profile: {
-        bike_year: activeBike?.bikeYear || profile.bikeYear,
-        bike_model: activeBike?.bikeModel || profile.bikeModel,
-        bike_variant: activeBike?.bikeVariant || profile.bikeVariant,
-        activeBikeId: activeBikeId || null,
+        bike_year: profile.bikeYear,
+        bike_model: profile.bikeModel,
+        bike_variant: profile.bikeVariant,
+        activeBikeId: null,
       }
     })
   } catch (error: any) {
