@@ -28,28 +28,11 @@ export default function ProfilePage() {
     }
     
     if (status === 'unauthenticated') {
-      const timer = setTimeout(() => {
-        const currentPath = window.location.pathname
-        if (currentPath !== '/auth/login') {
-          fetch('/api/auth/session', {
-            credentials: 'include',
-            cache: 'no-store',
-          })
-            .then(res => res.json())
-            .then(sessionData => {
-              if (!sessionData?.user) {
-                window.location.href = '/auth/login?callbackUrl=' + encodeURIComponent('/profile')
-              } else {
-                window.location.reload()
-              }
-            })
-            .catch(() => {
-              window.location.href = '/auth/login?callbackUrl=' + encodeURIComponent('/profile')
-            })
-        }
-      }, 1500)
-      
-      return () => clearTimeout(timer)
+      // Only redirect if we're actually on the profile page
+      const currentPath = window.location.pathname
+      if (currentPath === '/profile') {
+        router.push('/auth/login?callbackUrl=' + encodeURIComponent('/profile'))
+      }
     } else if (status === 'authenticated' && user) {
       setUserName(user.name || '')
     }

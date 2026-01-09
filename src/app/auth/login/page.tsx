@@ -21,7 +21,7 @@ function LoginForm() {
   const [success, setSuccess] = useState('')
   const [isSignUp, setIsSignUp] = useState(false)
 
-  // Redirect if already logged in
+  // Redirect if already logged in - but only after a delay to ensure session is stable
   useEffect(() => {
     if (status === 'loading') {
       return
@@ -30,12 +30,10 @@ function LoginForm() {
       const callbackUrl = searchParams.get('callbackUrl') || '/profile'
       const currentPath = window.location.pathname
       
-      if (currentPath !== callbackUrl) {
-        const timer = setTimeout(() => {
-          window.location.href = callbackUrl
-        }, 200)
-        
-        return () => clearTimeout(timer)
+      // Only redirect if we're actually on the login page
+      if (currentPath === '/auth/login' && callbackUrl !== '/auth/login') {
+        // Use router.push instead of window.location for smoother transition
+        router.push(callbackUrl)
       }
     }
   }, [status, session, router, searchParams])
@@ -62,31 +60,13 @@ function LoginForm() {
       } else if (result?.ok) {
         setSuccess(isSignUp ? 'Account created!' : 'Welcome back!')
         
+        // Update session
         await update()
         
-        const verifySession = async () => {
-          try {
-            const sessionResponse = await fetch('/api/auth/session', {
-              credentials: 'include',
-              cache: 'no-store',
-            })
-            const sessionData = await sessionResponse.json()
-            
-            if (sessionData?.user) {
-              window.location.href = callbackUrl
-            } else {
-              setTimeout(() => {
-                window.location.href = callbackUrl
-              }, 1000)
-            }
-          } catch (error) {
-            setTimeout(() => {
-              window.location.href = callbackUrl
-            }, 2000)
-          }
-        }
-        
-        setTimeout(verifySession, 800)
+        // Use router.push for smoother navigation
+        setTimeout(() => {
+          router.push(callbackUrl)
+        }, 500)
       } else {
         setError('Unexpected error. Please try again.')
         setLoading(false)
