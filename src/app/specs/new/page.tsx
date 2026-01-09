@@ -5,16 +5,17 @@ import { useSession } from 'next-auth/react'
 
 export const dynamic = 'force-dynamic'
 import Input from '@/components/ui/Input'
+import { Textarea } from '@/components/ui/Input'
 import Button from '@/components/ui/Button'
 import Card from '@/components/ui/Card'
 import { motion } from 'framer-motion'
-import { FilePlus, Wrench, Gauge, Hash, FileText, CheckCircle, AlertCircle, Loader2 } from 'lucide-react'
+import { FilePlus, Wrench, Gauge, Hash, FileText, CheckCircle, AlertCircle, ChevronDown } from 'lucide-react'
 
 const YEARS = Array.from({ length: 30 }, (_, i) => String(1995 + i))
 const MODELS = ['Softail', 'Sportster', 'Dyna', 'Road King', 'Street Glide', 'Fat Boy', 'Heritage Classic', 'Low Rider', 'Electra Glide', 'Road Glide', 'All Models']
 
 export default function NewSpecPage() {
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
   const user = session?.user
   const router = useRouter()
   const [componentName, setComponentName] = useState('')
@@ -29,13 +30,13 @@ export default function NewSpecPage() {
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
   useEffect(() => {
+    if (status === 'loading') return
     if (!user) {
-      router.push('/auth/login')
+      router.push('/auth/login?callbackUrl=' + encodeURIComponent('/specs/new'))
     } else {
-      // Load user's bike profile and auto-populate
       loadUserBikeProfile()
     }
-  }, [user, router])
+  }, [user, router, status])
 
   async function loadUserBikeProfile() {
     if (!user) return
@@ -47,7 +48,6 @@ export default function NewSpecPage() {
       if (res.ok) {
         const { profile } = await res.json()
         if (profile?.bike_year && profile?.bike_model) {
-          // Auto-populate bike fields
           if (!applicableYears.includes(profile.bike_year)) {
             setApplicableYears([profile.bike_year])
           }
@@ -72,12 +72,6 @@ export default function NewSpecPage() {
     setMessage(null)
 
     try {
-      if (!user) {
-        setMessage({ type: 'error', text: 'Please sign in to submit specs' })
-        setLoading(false)
-        return
-      }
-
       const body = {
         component_name: componentName,
         bolt_size: boltSize || null,
@@ -99,15 +93,13 @@ export default function NewSpecPage() {
       })
 
       if (res.ok) {
-        setMessage({ type: 'success', text: 'Spec submitted successfully! It will be reviewed before being published.' })
-        // Reset form but keep bike pre-populated
+        setMessage({ type: 'success', text: 'Spec submitted! It will be reviewed before publishing.' })
         setComponentName('')
         setBoltSize('')
         setTorqueLow('')
         setTorqueHigh('')
         setSequenceNotes('')
         setSourceNotes('')
-        // Don't reset applicableYears/Models - keep user's bike pre-selected
       } else {
         const { error } = await res.json()
         setMessage({ type: 'error', text: error || 'Failed to submit spec' })
@@ -131,58 +123,72 @@ export default function NewSpecPage() {
     )
   }
 
+  if (status === 'loading') {
+    return (
+      <div className="page-container flex items-center justify-center min-h-screen">
+        <div className="flame-spinner" />
+      </div>
+    )
+  }
+
   if (!user) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="page-container flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <p className="text-gray-400 mb-4">Redirecting to login...</p>
+          <div className="flame-spinner mx-auto mb-4" />
+          <p className="text-wrench-text-muted">Redirecting to login...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen py-12">
-      <div className="max-w-4xl mx-auto px-4">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-12"
-        >
-          <div className="inline-flex p-4 rounded-2xl bg-gradient-accent/20 mb-4">
-            <FilePlus className="w-8 h-8 text-wrench-accent" />
-          </div>
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            Submit a <span className="gradient-text">Technical Spec</span>
-          </h1>
-          <p className="text-xl text-gray-400">
-            Share your knowledge with the community
-          </p>
-        </motion.div>
+    <div className="page-container">
+      {/* Header */}
+      <section className="px-4 pt-6 pb-4 sm:pt-10 sm:pb-6">
+        <div className="max-w-2xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center mb-6"
+          >
+            <div className="inline-flex p-3 rounded-2xl bg-wrench-accent/15 mb-3">
+              <FilePlus className="w-7 h-7 text-wrench-accent" />
+            </div>
+            <h1 className="text-3xl sm:text-4xl font-bold mb-2">
+              Submit <span className="gradient-text">Spec</span>
+            </h1>
+            <p className="text-wrench-text-secondary">
+              Share your knowledge with the community
+            </p>
+          </motion.div>
+        </div>
+      </section>
 
-        <Card>
-          <form onSubmit={submit} className="space-y-6">
+      <div className="max-w-2xl mx-auto px-4 pb-8">
+        <Card padding="lg">
+          <form onSubmit={submit} className="space-y-5">
             {/* Component Name */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-wrench-text-secondary mb-2">
                 <Wrench className="w-4 h-4 inline mr-2" />
                 Component Name <span className="text-red-400">*</span>
               </label>
               <Input
                 value={componentName}
                 onChange={(e) => setComponentName(e.target.value)}
-                placeholder="e.g., Transmission cover, Head bolt, Exhaust nut"
+                placeholder="e.g., Transmission cover, Head bolt"
+                size="lg"
                 required
               />
             </div>
 
             {/* Torque Specs */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-3 gap-3">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  <Gauge className="w-4 h-4 inline mr-2" />
-                  Torque Low (Nm)
+                <label className="block text-sm font-medium text-wrench-text-secondary mb-2">
+                  <Gauge className="w-4 h-4 inline mr-1" />
+                  Low (Nm)
                 </label>
                 <Input
                   type="number"
@@ -193,9 +199,9 @@ export default function NewSpecPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  <Gauge className="w-4 h-4 inline mr-2" />
-                  Torque High (Nm)
+                <label className="block text-sm font-medium text-wrench-text-secondary mb-2">
+                  <Gauge className="w-4 h-4 inline mr-1" />
+                  High (Nm)
                 </label>
                 <Input
                   type="number"
@@ -206,48 +212,47 @@ export default function NewSpecPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  <Hash className="w-4 h-4 inline mr-2" />
-                  Bolt Size
+                <label className="block text-sm font-medium text-wrench-text-secondary mb-2">
+                  <Hash className="w-4 h-4 inline mr-1" />
+                  Bolt
                 </label>
                 <Input
                   value={boltSize}
                   onChange={(e) => setBoltSize(e.target.value)}
-                  placeholder="e.g., M8, 1/4-20"
+                  placeholder="M8"
                 />
               </div>
             </div>
 
             {/* Sequence Notes */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-wrench-text-secondary mb-2">
                 <FileText className="w-4 h-4 inline mr-2" />
                 Torque Sequence / Notes
               </label>
-              <textarea
+              <Textarea
                 value={sequenceNotes}
                 onChange={(e) => setSequenceNotes(e.target.value)}
-                placeholder="e.g., Tighten in a star pattern, Start from center and work outward"
+                placeholder="e.g., Tighten in star pattern, start from center"
                 rows={3}
-                className="w-full px-4 py-3 bg-white/10 dark:bg-gray-800/40 backdrop-blur-sm border border-white/20 dark:border-gray-700/50 rounded-lg text-gray-100 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-wrench-accent"
               />
             </div>
 
             {/* Applicable Years */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Applicable Years (select all that apply)
+              <label className="block text-sm font-medium text-wrench-text-secondary mb-2">
+                Applicable Years
               </label>
-              <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto p-2 bg-white/5 rounded-lg">
+              <div className="flex flex-wrap gap-1.5 max-h-28 overflow-y-auto p-3 rounded-2xl bg-wrench-light/30 border border-glass-border">
                 {YEARS.map(year => (
                   <button
                     key={year}
                     type="button"
                     onClick={() => toggleYear(year)}
-                    className={`px-3 py-1 rounded-lg text-sm transition-colors ${
+                    className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all haptic ${
                       applicableYears.includes(year)
                         ? 'bg-wrench-accent text-white'
-                        : 'bg-white/10 text-gray-300 hover:bg-white/20'
+                        : 'bg-wrench-light/50 text-wrench-text-secondary hover:bg-wrench-light'
                     }`}
                   >
                     {year}
@@ -258,19 +263,19 @@ export default function NewSpecPage() {
 
             {/* Applicable Models */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Applicable Models (select all that apply)
+              <label className="block text-sm font-medium text-wrench-text-secondary mb-2">
+                Applicable Models
               </label>
-              <div className="flex flex-wrap gap-2 p-2 bg-white/5 rounded-lg">
+              <div className="flex flex-wrap gap-1.5 p-3 rounded-2xl bg-wrench-light/30 border border-glass-border">
                 {MODELS.map(model => (
                   <button
                     key={model}
                     type="button"
                     onClick={() => toggleModel(model)}
-                    className={`px-3 py-1 rounded-lg text-sm transition-colors ${
+                    className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all haptic ${
                       applicableModels.includes(model)
                         ? 'bg-wrench-accent text-white'
-                        : 'bg-white/10 text-gray-300 hover:bg-white/20'
+                        : 'bg-wrench-light/50 text-wrench-text-secondary hover:bg-wrench-light'
                     }`}
                   >
                     {model}
@@ -281,16 +286,15 @@ export default function NewSpecPage() {
 
             {/* Source Notes */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-wrench-text-secondary mb-2">
                 <FileText className="w-4 h-4 inline mr-2" />
-                Source / Additional Notes
+                Source / Reference
               </label>
-              <textarea
+              <Textarea
                 value={sourceNotes}
                 onChange={(e) => setSourceNotes(e.target.value)}
-                placeholder="e.g., From 2018 Softail service manual, Verified by dealer mechanic"
-                rows={3}
-                className="w-full px-4 py-3 bg-white/10 dark:bg-gray-800/40 backdrop-blur-sm border border-white/20 dark:border-gray-700/50 rounded-lg text-gray-100 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-wrench-accent"
+                placeholder="e.g., From 2018 Softail service manual"
+                rows={2}
               />
             </div>
 
@@ -299,34 +303,35 @@ export default function NewSpecPage() {
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className={`flex items-center gap-2 p-4 rounded-lg ${
+                className={`flex items-center gap-2 p-3 rounded-xl text-sm ${
                   message.type === 'success'
-                    ? 'bg-green-500/20 border border-green-500/30 text-green-400'
-                    : 'bg-red-500/20 border border-red-500/30 text-red-400'
+                    ? 'bg-green-500/15 border border-green-500/30 text-green-400'
+                    : 'bg-red-500/15 border border-red-500/30 text-red-400'
                 }`}
               >
                 {message.type === 'success' ? (
-                  <CheckCircle className="w-5 h-5 flex-shrink-0" />
+                  <CheckCircle className="w-4 h-4 flex-shrink-0" />
                 ) : (
-                  <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
                 )}
-                <span className="text-sm">{message.text}</span>
+                <span>{message.text}</span>
               </motion.div>
             )}
 
-            {/* Submit Button */}
+            {/* Submit */}
             <Button
               type="submit"
               isLoading={loading}
-              className="w-full"
+              variant="flame"
               size="lg"
+              className="w-full"
             >
-              <FilePlus className="w-5 h-5 inline mr-2" />
-              Submit Spec for Review
+              <FilePlus className="w-5 h-5" />
+              <span>Submit Spec</span>
             </Button>
 
-            <p className="text-xs text-gray-500 text-center">
-              Your submission will be reviewed before being published. Thank you for contributing!
+            <p className="text-xs text-wrench-text-muted text-center">
+              Your submission will be reviewed before publishing
             </p>
           </form>
         </Card>

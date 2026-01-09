@@ -1,63 +1,66 @@
-// IMPORTANT:
-// - Do NOT cache the homepage `/` aggressively. That can cause stale UI after deploys.
-// - Use network-first for navigation (HTML) and cache-first for static assets.
-// - Bump CACHE_NAME when changing SW behavior so old caches get cleaned up.
-const CACHE_NAME = 'wrenchmc-v3' // Bumped to clear old auth-cached pages
+const CACHE_NAME = 'wrenchmc-mobile-v1'
 const OFFLINE_URL = '/offline.html'
 
+// Assets to precache
+const PRECACHE_ASSETS = [
+  '/',
+  '/offline.html',
+  '/manifest.json',
+  '/icons/icon-192.png',
+  '/icons/icon-512.png',
+]
+
+// Install - precache essential assets
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      // Pre-cache minimal offline fallback + manifest.
-      return cache.addAll([OFFLINE_URL, '/manifest.json'])
-    })
+    (async () => {
+      const cache = await caches.open(CACHE_NAME)
+      await cache.addAll(PRECACHE_ASSETS)
+      await self.skipWaiting()
+    })()
   )
-  self.skipWaiting()
 })
 
+// Activate - clean old caches
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     (async () => {
-      // Clean up old caches.
-      const keys = await caches.keys()
-      await Promise.all(keys.map((k) => (k !== CACHE_NAME ? caches.delete(k) : Promise.resolve(true))))
+      const cacheNames = await caches.keys()
+      await Promise.all(
+        cacheNames
+          .filter((name) => name !== CACHE_NAME)
+          .map((name) => caches.delete(name))
+      )
       await self.clients.claim()
     })()
   )
 })
 
+// Fetch - network-first for navigation, cache-first for assets
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return
 
   const req = event.request
+  const url = new URL(req.url)
 
-  // Navigation requests (page loads): network-first to avoid stale UI after deploys.
+  // Never cache auth-related requests
+  if (url.pathname.startsWith('/auth/') || 
+      url.pathname.startsWith('/api/auth/') ||
+      url.pathname.startsWith('/api/')) {
+    event.respondWith(fetch(req))
+    return
+  }
+
+  // Navigation requests: network-first
   if (req.mode === 'navigate' || (req.headers.get('accept') || '').includes('text/html')) {
-    // Don't cache authentication-related pages to avoid stale auth state
-    const url = new URL(req.url)
-    if (url.pathname.startsWith('/auth/') || url.pathname.startsWith('/api/auth/')) {
-      // Always fetch fresh for auth pages - don't cache
-      event.respondWith(fetch(req))
-      return
-    }
-    
     event.respondWith(
       (async () => {
         try {
           const fresh = await fetch(req)
-          // Don't cache pages that might have authentication state
-          // Only cache if it's not an auth-related response
-          if (!url.pathname.startsWith('/auth/') && !url.pathname.startsWith('/api/auth/')) {
-            const cache = await caches.open(CACHE_NAME)
-            cache.put(req, fresh.clone())
-          }
+          const cache = await caches.open(CACHE_NAME)
+          cache.put(req, fresh.clone())
           return fresh
         } catch (err) {
-          // Don't serve cached auth pages - only serve offline fallback
-          if (url.pathname.startsWith('/auth/') || url.pathname.startsWith('/api/auth/')) {
-            return fetch(req).catch(() => caches.match(OFFLINE_URL))
-          }
-          // Try cached page, then offline fallback.
           const cached = await caches.match(req)
           return cached || (await caches.match(OFFLINE_URL))
         }
@@ -66,20 +69,61 @@ self.addEventListener('fetch', (event) => {
     return
   }
 
-  // Static assets: cache-first, then network, and cache the result.
+  // Static assets: cache-first
   event.respondWith(
     (async () => {
       const cached = await caches.match(req)
       if (cached) return cached
+      
       try {
         const fresh = await fetch(req)
-        const cache = await caches.open(CACHE_NAME)
-        cache.put(req, fresh.clone())
+        // Only cache successful responses
+        if (fresh.ok) {
+          const cache = await caches.open(CACHE_NAME)
+          cache.put(req, fresh.clone())
+        }
         return fresh
       } catch (err) {
-        // If asset fetch fails, don't force offline HTML except as a last resort.
-        return (await caches.match(OFFLINE_URL)) || Response.error()
+        return Response.error()
       }
     })()
+  )
+})
+
+// Background sync for offline queries (future feature)
+self.addEventListener('sync', (event) => {
+  if (event.tag === 'sync-queries') {
+    // Handle offline query sync
+  }
+})
+
+// Push notifications (future feature)
+self.addEventListener('push', (event) => {
+  if (!event.data) return
+  
+  const data = event.data.json()
+  const options = {
+    body: data.body,
+    icon: '/icons/icon-192.png',
+    badge: '/icons/icon-192.png',
+    vibrate: [100, 50, 100],
+    data: { url: data.url || '/' },
+  }
+  
+  event.waitUntil(
+    self.registration.showNotification(data.title || 'WrenchMC', options)
+  )
+})
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close()
+  
+  event.waitUntil(
+    clients.matchAll({ type: 'window' }).then((clientList) => {
+      if (clientList.length > 0) {
+        return clientList[0].focus()
+      }
+      return clients.openWindow(event.notification.data.url || '/')
+    })
   )
 })

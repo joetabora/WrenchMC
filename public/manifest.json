@@ -1,13 +1,53 @@
 {
-  "name": "WrenchMC",
+  "name": "WrenchMC Mobile Edition",
   "short_name": "WrenchMC",
+  "description": "AI-powered Harley-Davidson maintenance companion",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#1F2937",
-  "theme_color": "#D97706",
-  "description": "Community-driven Harley-Davidson technical specs",
+  "orientation": "portrait-primary",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "scope": "/",
+  "lang": "en",
+  "categories": ["automotive", "utilities", "reference"],
   "icons": [
-    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png" }
-  ]
+    { 
+      "src": "/icons/icon-192.png", 
+      "sizes": "192x192", 
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    { 
+      "src": "/icons/icon-512.png", 
+      "sizes": "512x512", 
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Ask AI",
+      "short_name": "Ask",
+      "description": "Ask a maintenance question",
+      "url": "/ask",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Voice Search",
+      "short_name": "Voice",
+      "description": "Hands-free voice search",
+      "url": "/voice",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Tutorials",
+      "short_name": "Videos",
+      "description": "Watch repair tutorials",
+      "url": "/tutorials",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false
 }

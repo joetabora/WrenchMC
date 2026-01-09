@@ -4,12 +4,12 @@ import { motion } from 'framer-motion'
 import { useRouter } from 'next/navigation'
 import Button from '@/components/ui/Button'
 import Card from '@/components/ui/Card'
-import Input from '@/components/ui/Input'
-import { Search, Mic, Zap, Video, Database, TrendingUp, Sparkles, MessageSquare } from 'lucide-react'
+import { Search, Mic, Sparkles, Video, Database, Zap, ChevronRight, Flame } from 'lucide-react'
 
 export default function Home() {
   const router = useRouter()
   const [query, setQuery] = useState('')
+  const [isFocused, setIsFocused] = useState(false)
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
@@ -19,169 +19,273 @@ export default function Home() {
   }
 
   const quickQueries = [
-    'Torque specs for transmission cover on 2005 Road King',
-    'How to rebuild carb on 1980 Shovelhead',
-    'Fork oil capacity for 2015 Softail',
-    'Head bolt torque sequence for Twin Cam',
+    { text: 'Torque specs for transmission cover', icon: '🔧' },
+    { text: 'Primary oil capacity', icon: '🛢️' },
+    { text: 'Fork service intervals', icon: '🔩' },
+    { text: 'Head bolt sequence', icon: '⚙️' },
+  ]
+
+  const features = [
+    {
+      icon: Sparkles,
+      title: 'AI-Powered',
+      description: 'Instant answers from our trained AI mechanic',
+      gradient: 'from-orange-500 to-red-600',
+    },
+    {
+      icon: Zap,
+      title: 'Smart Cache',
+      description: 'Lightning fast responses from saved queries',
+      gradient: 'from-yellow-500 to-orange-500',
+    },
+    {
+      icon: Database,
+      title: 'Spec Database',
+      description: 'Community-verified torque specs and data',
+      gradient: 'from-blue-500 to-cyan-500',
+    },
+    {
+      icon: Video,
+      title: 'Video Guides',
+      description: 'Expert tutorials from top Harley mechanics',
+      gradient: 'from-purple-500 to-pink-500',
+    },
   ]
 
   return (
-    <div className="min-h-screen">
+    <div className="page-container">
       {/* Hero Section */}
-      <section className="relative overflow-hidden py-24 md:py-36">
-        <div className="absolute inset-0 bg-gradient-to-b from-wrench-dark via-wrench-dark to-wrench" />
-
-        <div className="relative max-w-5xl mx-auto px-6 text-center">
+      <section className="hero-section px-4 py-16 sm:py-24">
+        {/* Animated flame gradient background */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] rounded-full"
+            style={{
+              background: 'radial-gradient(ellipse at center, rgba(255,69,0,0.2) 0%, transparent 60%)',
+              filter: 'blur(80px)',
+            }}
+            animate={{
+              scale: [1, 1.1, 1],
+              opacity: [0.5, 0.7, 0.5],
+            }}
+            transition={{
+              duration: 4,
+              repeat: Infinity,
+              ease: 'easeInOut',
+            }}
+          />
+        </div>
+
+        <div className="relative max-w-4xl mx-auto text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
+            {/* Logo Icon */}
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
-              transition={{ delay: 0.1, type: 'spring', stiffness: 200 }}
-              className="inline-block mb-8 p-3 rounded-2xl bg-wrench-accent/10 backdrop-blur-sm border border-wrench-accent/20"
+              transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
+              className="inline-flex p-4 rounded-3xl bg-gradient-flame mb-6 shadow-glow-lg"
             >
-              <Sparkles className="w-12 h-12 text-wrench-accent" />
+              <Flame className="w-10 h-10 sm:w-12 sm:h-12 text-white" />
             </motion.div>
 
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 tracking-tight">
-              <span className="gradient-text">WrenchMC Goliath</span>
+            {/* Title */}
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-4 tracking-tight">
+              <span className="gradient-text">WrenchMC</span>
             </h1>
-            <p className="text-xl md:text-2xl text-wrench-text-secondary mb-4 max-w-2xl mx-auto font-light">
-              The ultimate AI-powered Harley-Davidson maintenance database
+            <p className="text-lg sm:text-xl text-wrench-text-secondary mb-2 font-medium">
+              Mobile Edition
             </p>
-            <p className="text-base md:text-lg text-wrench-text-muted mb-12 max-w-xl mx-auto">
-              Every bolt, torque value, and repair trick for all models from 1903 to now
+            <p className="text-base sm:text-lg text-wrench-text-muted mb-8 max-w-xl mx-auto">
+              Your AI-powered Harley-Davidson maintenance companion. Every spec, torque value, and repair trick at your fingertips.
             </p>
 
             {/* Search Bar */}
             <motion.form
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
+              transition={{ delay: 0.3 }}
               onSubmit={handleSearch}
-              className="flex flex-col sm:flex-row gap-3 max-w-2xl mx-auto mb-10"
+              className="relative max-w-2xl mx-auto mb-8"
             >
-              <Input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Ask anything: 'Torque specs for transmission cover on 2005 Road King'"
-                className="flex-1"
-              />
-              <Button type="submit" size="lg" className="w-full sm:w-auto">
-                <Search className="w-5 h-5 mr-2" />
-                Search
-              </Button>
+              <div className={`
+                relative overflow-hidden rounded-3xl transition-all duration-300
+                ${isFocused ? 'shadow-glow-lg' : 'shadow-glass-lg'}
+              `}>
+                <div className="absolute left-5 top-1/2 -translate-y-1/2 text-wrench-text-muted z-10">
+                  <Search className="w-5 h-5 sm:w-6 sm:h-6" />
+                </div>
+                <input
+                  type="text"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  onFocus={() => setIsFocused(true)}
+                  onBlur={() => setIsFocused(false)}
+                  placeholder="Torque for 2005 Road King transmission?"
+                  className="
+                    w-full pl-14 pr-32 sm:pr-36 py-5 sm:py-6
+                    bg-wrench-light/60 backdrop-blur-xl
+                    border border-glass-border
+                    text-wrench-text-primary placeholder:text-wrench-text-muted
+                    focus:outline-none focus:border-wrench-accent/50
+                    text-base sm:text-lg rounded-3xl
+                  "
+                  style={{ fontSize: '16px' }}
+                />
+                <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-2">
+                  <Button type="submit" variant="flame" size="md" className="rounded-2xl">
+                    <Search className="w-5 h-5" />
+                    <span className="hidden sm:inline ml-2">Ask</span>
+                  </Button>
+                </div>
+              </div>
             </motion.form>
 
-            <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+            {/* Action Buttons */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="flex flex-col sm:flex-row gap-3 justify-center items-center"
+            >
               <Button
                 size="lg"
-                variant="outline"
+                variant="secondary"
                 onClick={() => router.push('/voice')}
-                className="min-w-[180px]"
+                className="w-full sm:w-auto min-w-[180px]"
               >
-                <Mic className="w-5 h-5 mr-2" />
-                Voice Ask
+                <Mic className="w-5 h-5" />
+                <span>Voice Search</span>
               </Button>
               <Button
                 size="lg"
                 variant="primary"
                 onClick={() => router.push('/ask')}
-                className="min-w-[180px]"
+                className="w-full sm:w-auto min-w-[180px]"
               >
-                <Sparkles className="w-5 h-5 mr-2" />
-                Ask Now
+                <Sparkles className="w-5 h-5" />
+                <span>Ask AI</span>
               </Button>
-            </div>
+            </motion.div>
           </motion.div>
         </div>
       </section>
 
-      {/* Quick Queries */}
-      <section className="py-16 px-6">
-        <div className="max-w-5xl mx-auto">
-          <h2 className="text-2xl font-semibold mb-8 text-wrench-text-primary flex items-center gap-3">
-            <TrendingUp className="w-6 h-6 text-wrench-accent" />
-            Trending Queries
+      {/* Quick Queries - Horizontal scroll on mobile */}
+      <section className="px-4 py-8">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-lg font-semibold text-wrench-text-primary mb-4 flex items-center gap-2">
+            <Zap className="w-5 h-5 text-wrench-accent" />
+            Quick Questions
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="swipe-carousel pb-4">
             {quickQueries.map((q, i) => (
-              <Card
+              <motion.button
                 key={i}
-                delay={i * 0.05}
-                className="cursor-pointer"
-                onClick={() => router.push(`/query?q=${encodeURIComponent(q)}`)}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: i * 0.1 }}
+                onClick={() => router.push(`/ask?q=${encodeURIComponent(q.text)}`)}
+                className="
+                  flex items-center gap-3 px-5 py-4 rounded-2xl
+                  bg-wrench-light/50 border border-glass-border
+                  text-wrench-text-secondary hover:text-wrench-text-primary
+                  hover:bg-wrench-light hover:border-wrench-accent/30
+                  transition-all duration-200 haptic
+                  whitespace-nowrap min-w-[260px]
+                "
               >
-                <p className="text-wrench-text-secondary leading-relaxed">{q}</p>
-              </Card>
+                <span className="text-xl">{q.icon}</span>
+                <span className="text-sm font-medium">{q.text}</span>
+                <ChevronRight className="w-4 h-4 ml-auto text-wrench-text-muted" />
+              </motion.button>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-24 px-6">
-        <div className="max-w-5xl mx-auto">
+      {/* Features Grid */}
+      <section className="px-4 py-12 sm:py-16">
+        <div className="max-w-6xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
-            className="text-center mb-16"
+            className="text-center mb-10"
           >
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">
-              Everything you need to <span className="gradient-text">wrench smarter</span>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3">
+              Everything to <span className="gradient-text">wrench smarter</span>
             </h2>
-            <p className="text-lg text-wrench-text-secondary max-w-2xl mx-auto">
-              AI-powered answers, comprehensive database, video tutorials, and community knowledge
+            <p className="text-wrench-text-secondary max-w-xl mx-auto">
+              AI-powered answers, comprehensive specs, and expert tutorials in your pocket
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              {
-                icon: Sparkles,
-                title: 'AI-Powered Ask',
-                description: 'Ask natural language questions and get instant, accurate answers. Answers are cached to save AI tokens!',
-                color: 'from-blue-500 to-blue-600',
-              },
-              {
-                icon: Zap,
-                title: 'Smart Caching',
-                description: 'Previous answers are stored in database. Similar questions get instant responses without using AI tokens.',
-                color: 'from-amber-500 to-orange-500',
-              },
-              {
-                icon: Database,
-                title: 'Massive Database',
-                description: 'Thousands of specs, torque values, and technical data for all Harley models from the community',
-                color: 'from-cyan-500 to-blue-500',
-              },
-              {
-                icon: Video,
-                title: 'Video Tutorials',
-                description: 'Searchable YouTube gallery with top repair videos from expert channels',
-                color: 'from-red-500 to-pink-500',
-              },
-            ].map((feature, index) => {
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            {features.map((feature, i) => {
               const Icon = feature.icon
               return (
-                <Card key={feature.title} delay={index * 0.05} className="text-center">
+                <Card key={feature.title} delay={i * 0.1} className="text-center p-4 sm:p-6">
                   <motion.div
-                    whileHover={{ scale: 1.05 }}
-                    className={`inline-flex p-3 rounded-xl bg-gradient-to-br ${feature.color} mb-4`}
+                    whileHover={{ scale: 1.05, rotate: 3 }}
+                    whileTap={{ scale: 0.95 }}
+                    className={`
+                      inline-flex p-3 sm:p-4 rounded-2xl mb-3 sm:mb-4
+                      bg-gradient-to-br ${feature.gradient}
+                      shadow-lg
+                    `}
                   >
-                    <Icon className="w-7 h-7 text-white" />
+                    <Icon className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
                   </motion.div>
-                  <h3 className="text-lg font-semibold mb-2 text-wrench-text-primary">{feature.title}</h3>
-                  <p className="text-wrench-text-secondary text-sm leading-relaxed">{feature.description}</p>
+                  <h3 className="text-base sm:text-lg font-bold text-wrench-text-primary mb-1 sm:mb-2">
+                    {feature.title}
+                  </h3>
+                  <p className="text-xs sm:text-sm text-wrench-text-muted leading-relaxed">
+                    {feature.description}
+                  </p>
                 </Card>
               )
             })}
           </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="px-4 py-12 sm:py-16">
+        <div className="max-w-4xl mx-auto">
+          <Card className="relative overflow-hidden p-8 sm:p-12 text-center">
+            {/* Background flame effect */}
+            <div 
+              className="absolute inset-0 opacity-20 pointer-events-none"
+              style={{
+                background: 'radial-gradient(ellipse at bottom, rgba(255,69,0,0.3) 0%, transparent 60%)',
+              }}
+            />
+            <div className="relative">
+              <div className="inline-flex p-3 rounded-2xl bg-wrench-accent/20 mb-4">
+                <Mic className="w-8 h-8 text-wrench-accent" />
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-bold mb-3">
+                Hands-Free in the Garage
+              </h2>
+              <p className="text-wrench-text-secondary mb-6 max-w-md mx-auto">
+                Use voice commands while your hands are dirty. Just speak your question and get instant answers.
+              </p>
+              <Button
+                size="lg"
+                variant="flame"
+                onClick={() => router.push('/voice')}
+                className="min-w-[200px]"
+              >
+                <Mic className="w-5 h-5" />
+                <span>Try Voice Search</span>
+              </Button>
+            </div>
+          </Card>
         </div>
       </section>
     </div>

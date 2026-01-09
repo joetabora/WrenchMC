@@ -2,7 +2,6 @@
 'use client'
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Loader2 } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 
@@ -14,8 +13,8 @@ export default function SearchPage() {
   }, [router])
 
   return (
-    <div className="min-h-screen py-6 sm:py-12 px-4 sm:px-6 flex items-center justify-center">
-      <Loader2 className="w-8 h-8 text-wrench-accent animate-spin" />
+    <div className="page-container flex items-center justify-center min-h-screen">
+      <div className="flame-spinner" />
     </div>
   )
 }

@@ -1,11 +1,11 @@
 "use client"
 import React, { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Mic, MicOff, Volume2 } from 'lucide-react'
+import { Mic, MicOff, Flame } from 'lucide-react'
 
 type Props = {
   onResult?: (text: string) => void
-  onSpeakRequest?: (text: string) => void // Optional: use parent's TTS function
+  onSpeakRequest?: (text: string) => void
 }
 
 export default function VoiceController({ onResult, onSpeakRequest }: Props) {
@@ -15,15 +15,12 @@ export default function VoiceController({ onResult, onSpeakRequest }: Props) {
   const recognitionRef = useRef<any>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
 
-  // Use ElevenLabs for TTS (with fallback to Web Speech API)
   async function speakWithElevenLabs(text: string) {
-    // If parent provided a speak function, use it
     if (onSpeakRequest) {
       onSpeakRequest(text)
       return
     }
 
-    // Otherwise, try ElevenLabs directly
     try {
       const res = await fetch('/api/voice/tts', {
         method: 'POST',
@@ -43,7 +40,6 @@ export default function VoiceController({ onResult, onSpeakRequest }: Props) {
 
         audio.onerror = () => {
           URL.revokeObjectURL(audioUrl)
-          // Fallback to Web Speech API
           fallbackSpeakText(text)
         }
 
@@ -51,14 +47,12 @@ export default function VoiceController({ onResult, onSpeakRequest }: Props) {
         return
       }
     } catch (error) {
-      console.warn('ElevenLabs TTS failed, using fallback:', error)
+      console.warn('ElevenLabs TTS failed:', error)
     }
 
-    // Fallback to Web Speech API
     fallbackSpeakText(text)
   }
 
-  // Fallback to Web Speech API
   function fallbackSpeakText(text: string) {
     const synth = window.speechSynthesis
     if (!synth) return
@@ -88,7 +82,6 @@ export default function VoiceController({ onResult, onSpeakRequest }: Props) {
       
       if (ev.results[0].isFinal) {
         onResult?.(text)
-        // Use ElevenLabs for the "You asked" confirmation
         speakWithElevenLabs(`You asked: ${text}. Searching...`)
         setTranscript('')
       }
@@ -130,9 +123,12 @@ export default function VoiceController({ onResult, onSpeakRequest }: Props) {
 
   if (!supported) {
     return (
-      <div className="text-center p-6 rounded-xl bg-red-500/10 border border-red-500/30">
-        <p className="text-red-400">Voice recognition not supported in this browser.</p>
-        <p className="text-sm text-gray-400 mt-2">Please use Chrome, Edge, or Safari.</p>
+      <div className="glass-card p-6 text-center max-w-sm">
+        <div className="w-12 h-12 rounded-2xl bg-red-500/15 flex items-center justify-center mx-auto mb-3">
+          <MicOff className="w-6 h-6 text-red-400" />
+        </div>
+        <p className="text-red-400 font-medium mb-1">Voice not supported</p>
+        <p className="text-sm text-wrench-text-muted">Please use Chrome, Edge, or Safari.</p>
       </div>
     )
   }
@@ -143,19 +139,20 @@ export default function VoiceController({ onResult, onSpeakRequest }: Props) {
       <motion.button
         onClick={() => (listening ? stop() : start())}
         className={`
-          relative w-32 h-32 md:w-40 md:h-40
+          relative w-32 h-32 sm:w-40 sm:h-40
           rounded-full
           flex items-center justify-center
           transition-all duration-300
+          tap-target
           ${listening 
-            ? 'bg-gradient-accent shadow-glow-lg' 
-            : 'bg-gradient-to-br from-wrench-light to-wrench border-2 border-wrench-accent/30'
+            ? 'bg-gradient-flame shadow-glow-lg' 
+            : 'bg-wrench-light/50 border-2 border-wrench-accent/30 hover:border-wrench-accent/50'
           }
         `}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         animate={listening ? {
-          scale: [1, 1.1, 1],
+          scale: [1, 1.05, 1],
         } : {}}
         transition={{
           scale: {
@@ -164,6 +161,7 @@ export default function VoiceController({ onResult, onSpeakRequest }: Props) {
             ease: 'easeInOut'
           }
         }}
+        aria-label={listening ? 'Stop listening' : 'Start voice search'}
       >
         {/* Pulse rings when listening */}
         <AnimatePresence>
@@ -173,10 +171,10 @@ export default function VoiceController({ onResult, onSpeakRequest }: Props) {
                 <motion.div
                   key={i}
                   className="absolute inset-0 rounded-full border-2 border-wrench-accent"
-                  initial={{ scale: 1, opacity: 0.8 }}
+                  initial={{ scale: 1, opacity: 0.6 }}
                   animate={{ 
                     scale: [1, 2, 2.5],
-                    opacity: [0.8, 0.4, 0]
+                    opacity: [0.6, 0.3, 0]
                   }}
                   transition={{
                     duration: 2,
@@ -190,15 +188,25 @@ export default function VoiceController({ onResult, onSpeakRequest }: Props) {
           )}
         </AnimatePresence>
 
+        {/* Inner glow */}
+        {listening && (
+          <div 
+            className="absolute inset-4 rounded-full"
+            style={{
+              background: 'radial-gradient(circle, rgba(255,69,0,0.4) 0%, transparent 70%)',
+            }}
+          />
+        )}
+
         {/* Icon */}
         <motion.div
-          animate={listening ? { rotate: [0, -10, 10, -10, 0] } : {}}
-          transition={{ duration: 0.5, repeat: listening ? Infinity : 0 }}
+          animate={listening ? { scale: [1, 1.1, 1] } : {}}
+          transition={{ duration: 0.8, repeat: listening ? Infinity : 0 }}
         >
           {listening ? (
-            <MicOff className="w-12 h-12 md:w-16 md:h-16 text-white" />
+            <MicOff className="w-12 h-12 sm:w-14 sm:h-14 text-white" />
           ) : (
-            <Mic className="w-12 h-12 md:w-16 md:w-16 text-wrench-accent" />
+            <Mic className="w-12 h-12 sm:w-14 sm:h-14 text-wrench-accent" />
           )}
         </motion.div>
       </motion.button>
@@ -212,22 +220,19 @@ export default function VoiceController({ onResult, onSpeakRequest }: Props) {
           exit={{ opacity: 0, y: -10 }}
           className="text-center"
         >
-          <p className="text-xl font-semibold mb-2">
-            {listening ? (
-              <span className="text-wrench-accent flex items-center justify-center gap-2">
-                <motion.span
-                  animate={{ opacity: [1, 0.5, 1] }}
-                  transition={{ duration: 1, repeat: Infinity }}
-                >
-                  Listening...
-                </motion.span>
-              </span>
-            ) : (
-              <span className="text-gray-400">Tap to start</span>
-            )}
-          </p>
-          {listening && (
-            <p className="text-sm text-gray-500">Ask your question now</p>
+          {listening ? (
+            <div className="flex items-center justify-center gap-2 text-wrench-accent">
+              <motion.div
+                animate={{ opacity: [1, 0.5, 1] }}
+                transition={{ duration: 1, repeat: Infinity }}
+                className="flex items-center gap-2"
+              >
+                <Flame className="w-5 h-5" />
+                <span className="text-lg font-semibold">Listening...</span>
+              </motion.div>
+            </div>
+          ) : (
+            <p className="text-wrench-text-secondary font-medium">Tap to speak</p>
           )}
         </motion.div>
       </AnimatePresence>
@@ -239,12 +244,11 @@ export default function VoiceController({ onResult, onSpeakRequest }: Props) {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
-            className="w-full max-w-md p-4 rounded-lg bg-white/5 border border-white/10 backdrop-blur-sm"
+            className="w-full max-w-md p-4 rounded-2xl glass-card"
           >
-            <div className="flex items-start gap-2">
-              <Volume2 className="w-5 h-5 text-wrench-accent mt-0.5 flex-shrink-0" />
-              <p className="text-sm text-gray-300 italic">"{transcript}"</p>
-            </div>
+            <p className="text-sm text-wrench-text-primary italic text-center">
+              &quot;{transcript}&quot;
+            </p>
           </motion.div>
         )}
       </AnimatePresence>

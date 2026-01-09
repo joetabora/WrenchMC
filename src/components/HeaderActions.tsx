@@ -11,29 +11,32 @@ export default function HeaderActions() {
   const { data: session } = useSession()
 
   return (
-    <div className="flex items-center gap-1 sm:gap-2">
+    <div className="flex items-center gap-2">
       {session?.user ? (
         <>
-          <Link href="/profile" passHref>
-            <Button variant="ghost" size="sm" className="hidden sm:flex">
-              <User className="w-4 h-4 mr-2" />
-              <span className="hidden md:inline">Account</span>
+          <Link href="/profile" className="hidden sm:block">
+            <Button variant="ghost" size="sm">
+              <User className="w-4 h-4" />
+              <span className="hidden md:inline ml-1">Profile</span>
             </Button>
           </Link>
           <Button
             onClick={() => signOut({ callbackUrl: '/' })}
-            variant="outline"
+            variant="secondary"
             size="sm"
-            className="text-xs sm:text-sm"
           >
-            <LogOut className="w-4 h-4 sm:mr-2" />
-            <span className="hidden sm:inline">Sign Out</span>
+            <LogOut className="w-4 h-4" />
+            <span className="hidden sm:inline ml-1">Sign Out</span>
           </Button>
         </>
       ) : (
-        <Button onClick={() => router.push('/auth/login')} variant="primary" size="sm" className="text-xs sm:text-sm">
-          <LogIn className="w-4 h-4 sm:mr-2" />
-          <span className="hidden sm:inline">Sign In</span>
+        <Button 
+          onClick={() => router.push('/auth/login')} 
+          variant="flame" 
+          size="sm"
+        >
+          <LogIn className="w-4 h-4" />
+          <span className="ml-1">Sign In</span>
         </Button>
       )}
     </div>

@@ -1,42 +1,158 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>WrenchMC Goliath — Offline</title>
-    <style>
-      :root { color-scheme: dark; }
-      body {
-        margin: 0;
-        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji",
-          "Segoe UI Emoji";
-        background: #07090c;
-        color: #e6e6e6;
-        display: grid;
-        place-items: center;
-        min-height: 100vh;
-        padding: 24px;
-      }
-      .card {
-        max-width: 560px;
-        width: 100%;
-        border: 1px solid rgba(255, 255, 255, 0.12);
-        border-radius: 16px;
-        padding: 20px 18px;
-        background: rgba(255, 255, 255, 0.04);
-      }
-      h1 { margin: 0 0 8px; font-size: 20px; }
-      p { margin: 0; opacity: 0.85; line-height: 1.45; }
-      .hint { margin-top: 12px; font-size: 13px; opacity: 0.75; }
-    </style>
-  </head>
-  <body>
-    <div class="card">
-      <h1>You're offline</h1>
-      <p>WrenchMC Goliath can’t reach the network right now. Reconnect and try again.</p>
-      <p class="hint">Tip: once you're back online, reload to get the latest UI.</p>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#000000">
+  <title>Offline - WrenchMC</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+      background: #000;
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      padding-bottom: env(safe-area-inset-bottom);
+      background-image: 
+        radial-gradient(ellipse at 50% 0%, rgba(255, 69, 0, 0.08) 0%, transparent 50%),
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.02'/%3E%3C/svg%3E");
+    }
+    
+    .container {
+      text-align: center;
+      max-width: 400px;
+    }
+    
+    .icon {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 24px;
+      background: linear-gradient(135deg, #FF4500 0%, #CC3700 100%);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 32px rgba(255, 69, 0, 0.3);
+    }
+    
+    .icon svg {
+      width: 40px;
+      height: 40px;
+      color: white;
+    }
+    
+    h1 {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      background: linear-gradient(135deg, #FF4500 0%, #FF6B35 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    p {
+      font-size: 16px;
+      color: #737373;
+      line-height: 1.5;
+      margin-bottom: 24px;
+    }
+    
+    .retry-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 16px 32px;
+      background: linear-gradient(135deg, #FF4500 0%, #CC3700 100%);
+      color: white;
+      border: none;
+      border-radius: 16px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 4px 16px rgba(255, 69, 0, 0.3);
+    }
+    
+    .retry-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 24px rgba(255, 69, 0, 0.4);
+    }
+    
+    .retry-btn:active {
+      transform: scale(0.97);
+    }
+    
+    .tips {
+      margin-top: 32px;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    
+    .tips h3 {
+      font-size: 14px;
+      color: #a3a3a3;
+      margin-bottom: 12px;
+    }
+    
+    .tips ul {
+      list-style: none;
+      text-align: left;
+    }
+    
+    .tips li {
+      font-size: 14px;
+      color: #737373;
+      padding: 8px 0;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    
+    .tips li::before {
+      content: '•';
+      color: #FF4500;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+      </svg>
     </div>
-  </body>
+    
+    <h1>You're Offline</h1>
+    <p>WrenchMC needs an internet connection to search specs and tutorials. Check your connection and try again.</p>
+    
+    <button class="retry-btn" onclick="window.location.reload()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+      </svg>
+      Retry Connection
+    </button>
+    
+    <div class="tips">
+      <h3>While you're offline:</h3>
+      <ul>
+        <li>Check your WiFi or mobile data</li>
+        <li>Try moving to an area with better signal</li>
+        <li>Some cached pages may still work</li>
+      </ul>
+    </div>
+  </div>
+</body>
 </html>
-
-

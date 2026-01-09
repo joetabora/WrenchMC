@@ -9,7 +9,7 @@ import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import { motion } from 'framer-motion'
-import { User, Bike, Mail, LogOut, Save, CheckCircle, AlertCircle, UserCircle } from 'lucide-react'
+import { User, Bike, Mail, LogOut, Save, CheckCircle, AlertCircle, UserCircle, Crown, ChevronRight } from 'lucide-react'
 import { signOut as nextAuthSignOut } from 'next-auth/react'
 
 export default function ProfilePage() {
@@ -22,19 +22,14 @@ export default function ProfilePage() {
   const [nameMessage, setNameMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
   useEffect(() => {
-    // Don't redirect while loading - wait for status to be determined
     if (status === 'loading') {
-      return // Still loading, don't do anything
+      return
     }
     
-    // Only redirect if definitely unauthenticated - use longer delay to allow session to load
     if (status === 'unauthenticated') {
-      // Use a longer delay to allow session cookies to be read after page load
       const timer = setTimeout(() => {
         const currentPath = window.location.pathname
-        // Only redirect if we're not already on login page
         if (currentPath !== '/auth/login') {
-          // Check session one more time via API before redirecting
           fetch('/api/auth/session', {
             credentials: 'include',
             cache: 'no-store',
@@ -42,20 +37,16 @@ export default function ProfilePage() {
             .then(res => res.json())
             .then(sessionData => {
               if (!sessionData?.user) {
-                // Still no session, redirect to login
                 window.location.href = '/auth/login?callbackUrl=' + encodeURIComponent('/profile')
-              }
-              // If session exists now, reload the page to trigger session check
-              else {
+              } else {
                 window.location.reload()
               }
             })
             .catch(() => {
-              // If check fails, redirect to login
               window.location.href = '/auth/login?callbackUrl=' + encodeURIComponent('/profile')
             })
         }
-      }, 1500) // Longer delay to ensure session is loaded
+      }, 1500)
       
       return () => clearTimeout(timer)
     } else if (status === 'authenticated' && user) {
@@ -80,176 +71,162 @@ export default function ProfilePage() {
       })
 
       if (res.ok) {
-        setNameMessage({ type: 'success', text: 'Name updated successfully!' })
-        // Update session to reflect new name
+        setNameMessage({ type: 'success', text: 'Name updated!' })
         await updateSession()
       } else {
         const { error } = await res.json()
-        setNameMessage({ type: 'error', text: error || 'Failed to update name' })
+        setNameMessage({ type: 'error', text: error || 'Failed to update' })
       }
     } catch (error: any) {
-      setNameMessage({ type: 'error', text: error.message || 'Failed to update name' })
+      setNameMessage({ type: 'error', text: error.message || 'Failed to update' })
     } finally {
       setSavingName(false)
     }
   }
 
-  // Show loading state while checking authentication
   if (status === 'loading') {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="inline-block w-8 h-8 border-4 border-wrench-accent border-t-transparent rounded-full animate-spin mb-4"></div>
-          <p className="text-wrench-text-muted">Loading...</p>
-        </div>
+      <div className="page-container flex items-center justify-center min-h-screen">
+        <div className="flame-spinner" />
       </div>
     )
   }
 
-  // Show redirect message if not authenticated
   if (!user || status === 'unauthenticated') {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="page-container flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <p className="text-wrench-text-muted mb-4">Redirecting to login...</p>
+          <div className="flame-spinner mx-auto mb-4" />
+          <p className="text-wrench-text-muted">Redirecting to login...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen py-6 sm:py-12 px-4 sm:px-6">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-8 sm:mb-12"
-        >
-          <div className="inline-flex p-3 sm:p-4 rounded-2xl bg-gradient-accent/20 mb-3 sm:mb-4">
-            <User className="w-6 h-6 sm:w-8 sm:h-8 text-wrench-accent" />
-          </div>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-2 sm:mb-4">
-            Your <span className="gradient-text">Profile</span>
-          </h1>
-          <p className="text-base sm:text-xl text-wrench-text-secondary">
-            Manage your account and bike information
-          </p>
-        </motion.div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-          {/* Account Info */}
-          <Card>
-            <div className="flex items-center gap-3 mb-4 sm:mb-6">
-              <div className="p-2 rounded-lg bg-gradient-accent/20">
-                <Mail className="w-5 h-5 text-wrench-accent" />
+    <div className="page-container">
+      {/* Header */}
+      <section className="px-4 pt-6 pb-4 sm:pt-10 sm:pb-6">
+        <div className="max-w-2xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center"
+          >
+            {/* Avatar */}
+            <div className="relative inline-block mb-4">
+              <div className="avatar w-24 h-24 sm:w-28 sm:h-28 flex items-center justify-center bg-gradient-flame">
+                <User className="w-10 h-10 sm:w-12 sm:h-12 text-white" />
               </div>
-              <h2 className="text-lg sm:text-xl font-bold">Account Information</h2>
+              <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-wrench-surface border-2 border-wrench-accent flex items-center justify-center">
+                <Bike className="w-4 h-4 text-wrench-accent" />
+              </div>
             </div>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-wrench-text-secondary mb-2">
-                  <UserCircle className="w-4 h-4 inline mr-2" />
-                  Display Name
-                </label>
-                <form onSubmit={handleUpdateName} className="flex gap-2">
-                  <Input
-                    type="text"
-                    value={userName}
-                    onChange={(e) => setUserName(e.target.value)}
-                    placeholder="Your name"
-                    className="flex-1"
-                  />
-                  <Button
-                    type="submit"
-                    isLoading={savingName}
-                    size="sm"
-                    variant="outline"
-                  >
-                    <Save className="w-4 h-4" />
-                  </Button>
-                </form>
-                {nameMessage && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className={`flex items-center gap-2 p-2 rounded-lg mt-2 text-sm ${
-                      nameMessage.type === 'success'
-                        ? 'bg-green-500/20 border border-green-500/30 text-green-400'
-                        : 'bg-red-500/20 border border-red-500/30 text-red-400'
-                    }`}
-                  >
-                    {nameMessage.type === 'success' ? (
-                      <CheckCircle className="w-4 h-4 flex-shrink-0" />
-                    ) : (
-                      <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                    )}
-                    <span>{nameMessage.text}</span>
-                  </motion.div>
-                )}
-              </div>
-              <div>
-                <p className="text-sm text-wrench-text-muted mb-1">Email</p>
-                <p className="text-wrench-text-primary font-medium text-sm sm:text-base">{user.email || 'N/A'}</p>
-              </div>
-              <div>
-                <p className="text-sm text-wrench-text-muted mb-1">User ID</p>
-                <p className="text-wrench-text-secondary text-xs font-mono break-all">{(user as any)?.id || 'N/A'}</p>
-              </div>
-              <Button
-                variant="outline"
-                onClick={async () => {
-                  await nextAuthSignOut({ redirect: false })
-                  router.push('/')
-                }}
-                className="w-full mt-4"
-              >
-                <LogOut className="w-4 h-4 inline mr-2" />
-                Sign Out
-              </Button>
-            </div>
-          </Card>
-
-          {/* Bike Profile */}
-          <Card>
-            <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 rounded-lg bg-gradient-accent/20">
-                <Bike className="w-5 h-5 text-wrench-accent" />
-              </div>
-              <h2 className="text-xl font-bold">My Bike</h2>
-            </div>
-            <p className="text-sm text-wrench-text-secondary mb-4">
-              Save your primary bike to filter searches and use voice queries hands-free.
+            
+            <h1 className="text-2xl sm:text-3xl font-bold text-wrench-text-primary mb-1">
+              {user.name || 'Rider'}
+            </h1>
+            <p className="text-wrench-text-secondary text-sm mb-4">
+              {user.email}
             </p>
-            <BikeSelector onChange={(bike) => setProfile(bike)} />
-          </Card>
-        </div>
 
-        {/* Info Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="mt-8"
+            {/* Pro badge placeholder */}
+            <button className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-flame/20 border border-wrench-accent/30 text-wrench-accent text-sm font-medium haptic">
+              <Crown className="w-4 h-4" />
+              <span>Upgrade to Pro</span>
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </motion.div>
+        </div>
+      </section>
+
+      <div className="max-w-2xl mx-auto px-4 pb-8 space-y-4">
+        {/* Account Info */}
+        <Card padding="lg">
+          <div className="flex items-center gap-3 mb-5">
+            <div className="w-10 h-10 rounded-xl bg-wrench-accent/15 flex items-center justify-center">
+              <UserCircle className="w-5 h-5 text-wrench-accent" />
+            </div>
+            <h2 className="text-lg font-bold text-wrench-text-primary">Account</h2>
+          </div>
+
+          <form onSubmit={handleUpdateName} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-wrench-text-secondary mb-2">
+                Display Name
+              </label>
+              <div className="flex gap-2">
+                <Input
+                  type="text"
+                  value={userName}
+                  onChange={(e) => setUserName(e.target.value)}
+                  placeholder="Your name"
+                  size="md"
+                  className="flex-1"
+                />
+                <Button
+                  type="submit"
+                  isLoading={savingName}
+                  size="md"
+                  variant="secondary"
+                >
+                  <Save className="w-4 h-4" />
+                </Button>
+              </div>
+              {nameMessage && (
+                <motion.div
+                  initial={{ opacity: 0, y: -5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className={`flex items-center gap-2 mt-2 text-sm ${
+                    nameMessage.type === 'success' ? 'text-green-400' : 'text-red-400'
+                  }`}
+                >
+                  {nameMessage.type === 'success' ? (
+                    <CheckCircle className="w-4 h-4" />
+                  ) : (
+                    <AlertCircle className="w-4 h-4" />
+                  )}
+                  <span>{nameMessage.text}</span>
+                </motion.div>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-wrench-text-secondary mb-1">
+                Email
+              </label>
+              <p className="text-wrench-text-primary font-medium">{user.email || 'N/A'}</p>
+            </div>
+          </form>
+        </Card>
+
+        {/* Bike Profile */}
+        <Card padding="lg">
+          <div className="flex items-center gap-3 mb-5">
+            <div className="w-10 h-10 rounded-xl bg-wrench-accent/15 flex items-center justify-center">
+              <Bike className="w-5 h-5 text-wrench-accent" />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-wrench-text-primary">My Bike</h2>
+              <p className="text-xs text-wrench-text-muted">Used for personalized results</p>
+            </div>
+          </div>
+          <BikeSelector onChange={(bike) => setProfile(bike)} />
+        </Card>
+
+        {/* Sign Out */}
+        <Button
+          variant="secondary"
+          size="lg"
+          onClick={async () => {
+            await nextAuthSignOut({ redirect: false })
+            router.push('/')
+          }}
+          className="w-full"
         >
-          <Card className="border-wrench-accent/30">
-            <h3 className="text-lg font-bold mb-2">Why save your bike?</h3>
-            <ul className="space-y-2 text-sm text-wrench-text-secondary">
-              <li className="flex items-start gap-2">
-                <span className="text-wrench-accent mt-1">•</span>
-                <span>Get personalized search results filtered for your bike</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-wrench-accent mt-1">•</span>
-                <span>Use voice queries without specifying your bike each time</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-wrench-accent mt-1">•</span>
-                <span>Submit specs that are automatically tagged with your bike model</span>
-              </li>
-            </ul>
-          </Card>
-        </motion.div>
+          <LogOut className="w-5 h-5" />
+          <span>Sign Out</span>
+        </Button>
       </div>
     </div>
   )
