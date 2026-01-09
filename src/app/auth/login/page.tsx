@@ -28,10 +28,17 @@ function LoginForm() {
     }
     if (status === 'authenticated' && session?.user) {
       const callbackUrl = searchParams.get('callbackUrl') || '/profile'
-      // Use setTimeout to avoid conflicts with other state updates
-      setTimeout(() => {
-        window.location.href = callbackUrl
-      }, 100)
+      const currentPath = window.location.pathname
+      
+      // Only redirect if we're not already on the target page
+      if (currentPath !== callbackUrl) {
+        // Use setTimeout to avoid conflicts with other state updates
+        const timer = setTimeout(() => {
+          window.location.href = callbackUrl
+        }, 200)
+        
+        return () => clearTimeout(timer)
+      }
     }
   }, [status, session, router, searchParams])
 
@@ -57,19 +64,46 @@ function LoginForm() {
       } else if (result?.ok) {
         setSuccess(isSignUp ? 'Account created successfully! Redirecting...' : 'Signed in successfully! Redirecting...')
         
-        // For database strategy, we need to wait for the session to be created
-        // Use a full page reload to ensure cookies are set and session is available
-        setTimeout(() => {
-          // Force a full page reload to the callback URL
-          // This ensures the session cookie is properly set and read
-          window.location.href = callbackUrl
-        }, 1000)
+        // Update session immediately
+        await update()
+        
+        // Verify session is set by checking the session endpoint
+        const verifySession = async () => {
+          try {
+            const sessionResponse = await fetch('/api/auth/session', {
+              credentials: 'include',
+              cache: 'no-store',
+            })
+            const sessionData = await sessionResponse.json()
+            
+            if (sessionData?.user) {
+              // Session confirmed, safe to redirect
+              window.location.href = callbackUrl
+            } else {
+              // Session not ready yet, wait a bit more and try redirect anyway
+              // The redirect will trigger a full page reload which should pick up cookies
+              setTimeout(() => {
+                window.location.href = callbackUrl
+              }, 1000)
+            }
+          } catch (error) {
+            console.error('Session verification error:', error)
+            // Fallback: redirect after delay
+            setTimeout(() => {
+              window.location.href = callbackUrl
+            }, 2000)
+          }
+        }
+        
+        // Wait a moment for cookie to be set, then verify
+        setTimeout(verifySession, 800)
       } else {
-        setError('Unexpected error occurred')
+        setError('Unexpected error occurred. Please try again.')
         setLoading(false)
       }
     } catch (err: any) {
-      setError(err.message || 'An error occurred')
+      console.error('Login error:', err)
+      setError(err.message || 'An error occurred during sign in. Please try again.')
       setLoading(false)
     }
   }

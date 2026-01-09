@@ -2,7 +2,7 @@
 // - Do NOT cache the homepage `/` aggressively. That can cause stale UI after deploys.
 // - Use network-first for navigation (HTML) and cache-first for static assets.
 // - Bump CACHE_NAME when changing SW behavior so old caches get cleaned up.
-const CACHE_NAME = 'wrenchmc-v2'
+const CACHE_NAME = 'wrenchmc-v3' // Bumped to clear old auth-cached pages
 const OFFLINE_URL = '/offline.html'
 
 self.addEventListener('install', (event) => {
@@ -33,15 +33,30 @@ self.addEventListener('fetch', (event) => {
 
   // Navigation requests (page loads): network-first to avoid stale UI after deploys.
   if (req.mode === 'navigate' || (req.headers.get('accept') || '').includes('text/html')) {
+    // Don't cache authentication-related pages to avoid stale auth state
+    const url = new URL(req.url)
+    if (url.pathname.startsWith('/auth/') || url.pathname.startsWith('/api/auth/')) {
+      // Always fetch fresh for auth pages - don't cache
+      event.respondWith(fetch(req))
+      return
+    }
+    
     event.respondWith(
       (async () => {
         try {
           const fresh = await fetch(req)
-          // Cache a copy for offline fallback (but always prefer network).
-          const cache = await caches.open(CACHE_NAME)
-          cache.put(req, fresh.clone())
+          // Don't cache pages that might have authentication state
+          // Only cache if it's not an auth-related response
+          if (!url.pathname.startsWith('/auth/') && !url.pathname.startsWith('/api/auth/')) {
+            const cache = await caches.open(CACHE_NAME)
+            cache.put(req, fresh.clone())
+          }
           return fresh
         } catch (err) {
+          // Don't serve cached auth pages - only serve offline fallback
+          if (url.pathname.startsWith('/auth/') || url.pathname.startsWith('/api/auth/')) {
+            return fetch(req).catch(() => caches.match(OFFLINE_URL))
+          }
           // Try cached page, then offline fallback.
           const cached = await caches.match(req)
           return cached || (await caches.match(OFFLINE_URL))

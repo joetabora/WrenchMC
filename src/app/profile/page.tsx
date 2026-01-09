@@ -27,10 +27,37 @@ export default function ProfilePage() {
       return // Still loading, don't do anything
     }
     
-    // Only redirect if definitely unauthenticated - use window.location to avoid loop
+    // Only redirect if definitely unauthenticated - use longer delay to allow session to load
     if (status === 'unauthenticated') {
-      window.location.href = '/auth/login?callbackUrl=' + encodeURIComponent('/profile')
-      return
+      // Use a longer delay to allow session cookies to be read after page load
+      const timer = setTimeout(() => {
+        const currentPath = window.location.pathname
+        // Only redirect if we're not already on login page
+        if (currentPath !== '/auth/login') {
+          // Check session one more time via API before redirecting
+          fetch('/api/auth/session', {
+            credentials: 'include',
+            cache: 'no-store',
+          })
+            .then(res => res.json())
+            .then(sessionData => {
+              if (!sessionData?.user) {
+                // Still no session, redirect to login
+                window.location.href = '/auth/login?callbackUrl=' + encodeURIComponent('/profile')
+              }
+              // If session exists now, reload the page to trigger session check
+              else {
+                window.location.reload()
+              }
+            })
+            .catch(() => {
+              // If check fails, redirect to login
+              window.location.href = '/auth/login?callbackUrl=' + encodeURIComponent('/profile')
+            })
+        }
+      }, 1500) // Longer delay to ensure session is loaded
+      
+      return () => clearTimeout(timer)
     } else if (status === 'authenticated' && user) {
       setUserName(user.name || '')
     }
@@ -67,7 +94,20 @@ export default function ProfilePage() {
     }
   }
 
-  if (!user) {
+  // Show loading state while checking authentication
+  if (status === 'loading') {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="inline-block w-8 h-8 border-4 border-wrench-accent border-t-transparent rounded-full animate-spin mb-4"></div>
+          <p className="text-wrench-text-muted">Loading...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Show redirect message if not authenticated
+  if (!user || status === 'unauthenticated') {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">

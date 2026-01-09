@@ -10,9 +10,23 @@ export default function ServiceWorkerRegister() {
         .register('/sw.js')
         .then((reg) => {
           setRegistered(true)
-          // Ask the browser to check for an updated SW in the background.
-          // Helps ensure old caching logic is replaced quickly.
+          // Force update to get new service worker immediately
           reg.update().catch(() => {})
+          
+          // Clear old caches when service worker updates
+          if (reg.waiting || reg.installing) {
+            // New service worker available - skip waiting and activate
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+              // When new service worker takes control, clear old caches
+              caches.keys().then((cacheNames) => {
+                cacheNames.forEach((cacheName) => {
+                  if (cacheName.startsWith('wrenchmc-') && cacheName !== 'wrenchmc-v3') {
+                    caches.delete(cacheName)
+                  }
+                })
+              })
+            })
+          }
         })
         .catch(() => setRegistered(false))
     }
