@@ -16,46 +16,45 @@ export async function GET(request: NextRequest) {
     let profile: any
     let activeBikeId: string | null = null
     
-    // First, get basic profile fields that definitely exist
-    // Skip activeBikeId for now - it may not exist if migrations haven't run
+    // Get or create user profile
     profile = await prisma.userProfile.findUnique({
       where: { userId: session.user.id },
-      select: {
-        bikeYear: true,
-        bikeModel: true,
-        bikeVariant: true,
-      },
     })
-    
-    // Skip activeBikeId query entirely - Garage feature disabled until migrations run
-    activeBikeId = null
 
     if (!profile) {
       // Create profile if it doesn't exist
+      profile = await prisma.userProfile.create({
+        data: {
+          userId: session.user.id,
+        },
+      })
+    }
+
+    // Get active bike from garage if available
+    let activeBike: { bikeYear: string | null; bikeModel: string | null; bikeVariant: string | null } | null = null
+    if (profile.activeBikeId) {
       try {
-        profile = await prisma.userProfile.create({
-          data: {
-            userId: session.user.id,
+        const bike = await prisma.garage.findUnique({
+          where: { id: profile.activeBikeId },
+          select: {
+            bikeYear: true,
+            bikeModel: true,
+            bikeVariant: true,
           },
         })
-      } catch (createError: any) {
-        // If create fails due to schema issues, still return basic profile
-        console.warn('Error creating profile:', createError)
-        profile = {
-          bikeYear: null,
-          bikeModel: null,
-          bikeVariant: null,
-        }
+        activeBike = bike
+      } catch (error: any) {
+        console.warn('Error loading active bike from garage:', error)
       }
     }
 
-    // Garage feature temporarily disabled - return basic profile fields only
+    // Fallback to profile bike fields for backward compatibility
     return NextResponse.json({ 
       profile: {
-        bike_year: profile.bikeYear,
-        bike_model: profile.bikeModel,
-        bike_variant: profile.bikeVariant,
-        activeBikeId: null,
+        bike_year: activeBike?.bikeYear || profile.bikeYear,
+        bike_model: activeBike?.bikeModel || profile.bikeModel,
+        bike_variant: activeBike?.bikeVariant || profile.bikeVariant,
+        activeBikeId: profile.activeBikeId || null,
       }
     })
   } catch (error: any) {

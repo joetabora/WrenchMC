@@ -184,8 +184,8 @@ export default function ProfilePage() {
           </form>
         </Card>
 
-        {/* Garage - Temporarily disabled until migrations are run */}
-        {false && (
+        {/* Garage */}
+        {true && (
           <Card padding="lg">
             <div className="flex items-center gap-3 mb-5">
               <div className="w-10 h-10 rounded-xl bg-wrench-accent/15 flex items-center justify-center">

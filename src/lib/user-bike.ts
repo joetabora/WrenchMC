@@ -21,6 +21,7 @@ export async function getUserBikeProfile(): Promise<BikeProfile | null> {
         bikeYear: true,
         bikeModel: true,
         bikeVariant: true,
+        activeBikeId: true,
       },
     })
 
@@ -28,7 +29,29 @@ export async function getUserBikeProfile(): Promise<BikeProfile | null> {
       return null
     }
 
-    // Garage feature temporarily disabled - skip activeBikeId logic
+    // If user has an active bike in garage, use that
+    if (profile.activeBikeId) {
+      try {
+        const activeBike = await prisma.garage.findUnique({
+          where: { id: profile.activeBikeId },
+          select: {
+            bikeYear: true,
+            bikeModel: true,
+            bikeVariant: true,
+          },
+        })
+
+        if (activeBike) {
+          return {
+            year: activeBike.bikeYear,
+            model: activeBike.bikeModel,
+            variant: activeBike.bikeVariant,
+          }
+        }
+      } catch (error) {
+        console.warn('Error loading active bike from garage:', error)
+      }
+    }
 
     // Fallback to profile bike fields for backward compatibility
     return {
