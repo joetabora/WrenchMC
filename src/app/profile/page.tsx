@@ -71,7 +71,8 @@ export default function ProfilePage() {
       })
 
       if (res.ok) {
-        setProfileImage(url)
+        const { profile } = await res.json()
+        setProfileImage(profile?.profile_image || url)
       } else {
         const { error } = await res.json()
         alert(error || 'Failed to save image')

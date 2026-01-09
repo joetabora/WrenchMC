@@ -107,6 +107,7 @@ export async function POST(request: NextRequest) {
         bike_year: profile.bikeYear,
         bike_model: profile.bikeModel,
         bike_variant: profile.bikeVariant,
+        profile_image: profile.profileImage || null,
       },
       success: true 
     })
