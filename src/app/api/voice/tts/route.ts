@@ -11,10 +11,12 @@ export async function POST(req: NextRequest) {
     }
 
     // Generate speech using ElevenLabs
+    // Higher stability = slower, more consistent speech (reduces word mixing)
+    // Using multilingual_v2 model instead of turbo for clearer, slower speech
     const audioBuffer = await textToSpeech(text, {
       voiceId,
-      modelId,
-      stability: 0.5,
+      modelId: modelId || 'eleven_multilingual_v2', // Slower but clearer than turbo
+      stability: 0.75, // Increased from 0.5 for slower, more consistent speech
       similarityBoost: 0.75,
       style: 0.0,
       useSpeakerBoost: true,

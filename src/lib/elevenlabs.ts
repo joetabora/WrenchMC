@@ -24,7 +24,8 @@ export async function textToSpeech(
     // Default voice ID (Rachel - a popular choice)
     // You can change this to any voice ID from your ElevenLabs account
     const voiceId = config.voiceId || process.env.ELEVENLABS_VOICE_ID || '21m00Tcm4TlvDq8ikWAM' // Rachel
-    const modelId = config.modelId || process.env.ELEVENLABS_MODEL_ID || 'eleven_turbo_v2_5'
+    // Using multilingual_v2 instead of turbo for clearer, slower speech (less word mixing)
+    const modelId = config.modelId || process.env.ELEVENLABS_MODEL_ID || 'eleven_multilingual_v2'
     
     const response = await fetch(
       `${ELEVENLABS_API_URL}/text-to-speech/${voiceId}`,
