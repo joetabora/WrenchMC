@@ -76,6 +76,8 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { bike_year, bike_model, bike_variant, name, profile_image } = body
 
+    console.log('Profile POST request:', { bike_year, bike_model, bike_variant, name, profile_image })
+
     // Update user name if provided
     if (name !== undefined) {
       await prisma.user.update({
@@ -91,6 +93,27 @@ export async function POST(request: NextRequest) {
     if (bike_variant !== undefined) updateData.bikeVariant = bike_variant || null
     if (profile_image !== undefined) updateData.profileImage = profile_image || null
 
+    console.log('Update data:', updateData)
+
+    // If no update data provided, return current profile
+    if (Object.keys(updateData).length === 0) {
+      const currentProfile = await prisma.userProfile.findUnique({
+        where: { userId: session.user.id },
+      })
+      if (!currentProfile) {
+        return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
+      }
+      return NextResponse.json({ 
+        profile: {
+          bike_year: currentProfile.bikeYear,
+          bike_model: currentProfile.bikeModel,
+          bike_variant: currentProfile.bikeVariant,
+          profile_image: currentProfile.profileImage || null,
+        },
+        success: true 
+      })
+    }
+
     // Upsert bike profile
     const profile = await prisma.userProfile.upsert({
       where: { userId: session.user.id },
@@ -103,6 +126,8 @@ export async function POST(request: NextRequest) {
         profileImage: profile_image || null,
       },
     })
+
+    console.log('Updated profile:', { profileImage: profile.profileImage })
 
     return NextResponse.json({ 
       profile: {

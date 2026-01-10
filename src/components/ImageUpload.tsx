@@ -25,6 +25,11 @@ export default function ImageUpload({
   const [preview, setPreview] = useState<string | null>(currentImage || null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  // Sync preview with currentImage prop
+  React.useEffect(() => {
+    setPreview(currentImage || null)
+  }, [currentImage])
+
   const sizeClasses = {
     sm: 'w-16 h-16',
     md: 'w-24 h-24',
