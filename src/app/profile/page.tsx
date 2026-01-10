@@ -60,7 +60,6 @@ export default function ProfilePage() {
   async function handleImageUpload(url: string) {
     if (!user) return
     
-    console.log('handleImageUpload called with URL:', url)
     setSavingImage(true)
     try {
       const res = await fetch('/api/profile', {
@@ -71,13 +70,9 @@ export default function ProfilePage() {
         body: JSON.stringify({ profile_image: url }),
       })
 
-      console.log('Profile API response status:', res.status)
-
       if (res.ok) {
         const data = await res.json()
-        console.log('Profile API response data:', data)
         const profileImageUrl = data.profile?.profile_image || url
-        console.log('Setting profile image to:', profileImageUrl)
         setProfileImage(profileImageUrl)
       } else {
         const errorData = await res.json().catch(() => ({ error: 'Unknown error' }))

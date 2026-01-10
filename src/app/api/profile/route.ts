@@ -76,8 +76,6 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { bike_year, bike_model, bike_variant, name, profile_image } = body
 
-    console.log('Profile POST request:', { bike_year, bike_model, bike_variant, name, profile_image })
-
     // Update user name if provided
     if (name !== undefined) {
       await prisma.user.update({
@@ -92,8 +90,6 @@ export async function POST(request: NextRequest) {
     if (bike_model !== undefined) updateData.bikeModel = bike_model || null
     if (bike_variant !== undefined) updateData.bikeVariant = bike_variant || null
     if (profile_image !== undefined) updateData.profileImage = profile_image || null
-
-    console.log('Update data:', updateData)
 
     // If no update data provided, return current profile
     if (Object.keys(updateData).length === 0) {
@@ -126,8 +122,6 @@ export async function POST(request: NextRequest) {
         profileImage: profile_image || null,
       },
     })
-
-    console.log('Updated profile:', { profileImage: profile.profileImage })
 
     return NextResponse.json({ 
       profile: {
